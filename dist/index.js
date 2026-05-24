@@ -1,0 +1,98 @@
+import { Bot } from "./core/core.js";
+import dotenv from 'dotenv';
+dotenv.config();
+import { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Wallet, MoneyTop, Daily, Points, Verify, Album, Birthday, SopaDePata, } from './commands/index.js';
+import cron from 'node-cron';
+import { getBirthdaysToday } from "./db/mongodb.js";
+var Commands;
+(function (Commands) {
+    Commands["INFO"] = "info";
+    Commands["LOCK"] = "lock";
+    Commands["UNLOCK"] = "unlock";
+    Commands["BAN"] = "ban";
+    Commands["SET"] = "set";
+    Commands["TOP"] = "top";
+    Commands["TOPPOINTS"] = "toppoints";
+    Commands["WARNINGS"] = "warnings";
+    Commands["WARN"] = "warn";
+    Commands["RESUME"] = "resume";
+    Commands["PROFILE"] = "profile";
+    Commands["KICK"] = "kick";
+    Commands["STORE"] = "shop";
+    Commands["YAPPY"] = "yappy";
+    Commands["WORK"] = "work";
+    Commands["WALLET"] = "wallet";
+    Commands["TOPMONEY"] = "topmoney";
+    Commands["DAILY"] = "daily";
+    Commands["POINTS"] = "points";
+    Commands["BIRTHDAY"] = "birthday";
+    Commands["SOPADEPATA"] = "sopadepata";
+    Commands["CUMPLEA\u00D1OS"] = "cumplea\u00F1os";
+    Commands["VERIFY"] = "verify";
+    Commands["ALBUM"] = "maxnini";
+    Commands["NEYMAR"] = "neymar";
+    Commands["DEPOSIT"] = "deposit";
+    Commands["PAGARNEYMAR"] = "pagarneymar";
+})(Commands || (Commands = {}));
+await Bot.connect();
+// Bot.command(Commands.PROFILE, (ctx) => {
+//   if (ctx.admin) Profile(ctx)
+// })
+// Bot.command(Commands.LOCK, (ctx) => {
+//   if (ctx.admin) Lock(ctx)
+// })
+// Bot.command(Commands.UNLOCK, (ctx) => {
+//   if (ctx.admin) Unlock(ctx)
+// })
+// Bot.command(Commands.WARN, (ctx) => {
+//   if (ctx.admin) Warn(ctx)
+// })
+// Bot.command(Commands.WARNINGS, (ctx) => {
+//   if (ctx.admin) Warnings(ctx)
+// })
+// Bot.command(Commands.TOP, (ctx) => {
+//   if (ctx.admin) Top(ctx)
+// })
+// Bot.command(Commands.KICK, (ctx) => {
+//   if (ctx.admin) Kick(ctx)
+// })
+// Bot.command(Commands.VERIFY, Verify)
+// Bot.command(Commands.YAPPY, Yappy)
+// Bot.command(Commands.WORK, Work)
+// Bot.command(Commands.ALBUM, (ctx) => {
+//   if (ctx.admin) Album(ctx)
+// })
+// Bot.command(Commands.WALLET, Wallet)
+// Bot.command(Commands.TOPPOINTS, (ctx) => {
+//   if (ctx.admin) Levels(ctx)
+// })
+// Bot.command(Commands.TOPMONEY, (ctx) => {
+//   if (ctx.admin) MoneyTop(ctx)
+// })
+// Bot.command(Commands.DAILY, Daily)
+// Bot.command(Commands.POINTS, (ctx) => {
+//   if (ctx.admin) Points(ctx)
+// })
+// Bot.command(Commands.BIRTHDAY, Birthday)
+// Bot.command('cumple', Birthday)
+// Bot.command(Commands.CUMPLEAÑOS, (ctx) => {
+//   if (ctx.admin) SopaDePata(ctx)
+// })
+// Bot.command(Commands.SOPADEPATA, (ctx) => {
+//   if (ctx.admin) SopaDePata(ctx)
+// })
+// cron.schedule('1 0 * * *', async () => {
+//   console.log('🎂 Verificando cumpleaños de hoy...');
+//   const users = await getBirthdaysToday();
+//   for (const user of users) {
+//     await Bot.sendMessage({
+//       msg: null as unknown as WAMessage,
+//       jid: user.group || '',
+//       content: `🎂 ¡Feliz cumpleaños 🎂🎉\n *${user.name}* que tengas un día increíble 🥳✨\n¡Disfrútalo al máximo! 🎁🔥`,
+//       mentions: [user.lib || ''],
+//       delay: 2000
+//     });
+//   }
+// }, {
+//   timezone: 'America/Panama'
+// });
