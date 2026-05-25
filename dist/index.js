@@ -81,18 +81,18 @@ await Bot.connect();
 // Bot.command(Commands.SOPADEPATA, (ctx) => {
 //   if (ctx.admin) SopaDePata(ctx)
 // })
-// cron.schedule('1 0 * * *', async () => {
-//   console.log('🎂 Verificando cumpleaños de hoy...');
-//   const users = await getBirthdaysToday();
-//   for (const user of users) {
-//     await Bot.sendMessage({
-//       msg: null as unknown as WAMessage,
-//       jid: user.group || '',
-//       content: `🎂 ¡Feliz cumpleaños 🎂🎉\n *${user.name}* que tengas un día increíble 🥳✨\n¡Disfrútalo al máximo! 🎁🔥`,
-//       mentions: [user.lib || ''],
-//       delay: 2000
-//     });
-//   }
-// }, {
-//   timezone: 'America/Panama'
-// });
+cron.schedule('1 0 * * *', async () => {
+    console.log('🎂 Verificando cumpleaños de hoy...');
+    const users = await getBirthdaysToday();
+    for (const user of users) {
+        await Bot.sendMessage({
+            msg: null,
+            jid: user.group || '',
+            content: `🎂 ¡Feliz cumpleaños 🎂🎉\n *${user.name}* que tengas un día increíble 🥳✨\n¡Disfrútalo al máximo! 🎁🔥`,
+            mentions: [user.lib || ''],
+            delay: 2000
+        });
+    }
+}, {
+    timezone: 'America/Panama'
+});
