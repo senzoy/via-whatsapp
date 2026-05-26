@@ -12,6 +12,7 @@ import QRCode from 'qrcode'
 import { Boom } from '@hapi/boom'
 import type { CommandContext } from "../libs/types.js"
 import { PointSystem } from "../services/points.js"
+import { checkRobResponse } from "../libs/robbery.js"
 
 type CommandHandler = (ctx: CommandContext) => void | Promise<void>
 interface sendMessage {
@@ -107,8 +108,9 @@ class WABot {
       console.log(msg.key.remoteJid)
 
       if (!text.startsWith(this.prefix)) {
-        console.log(`📩 Nuevo mensaje (${type}) ${msg.key} - Request ID: ${requestId}, time: ${Date.now()}`)
+        console.log(`📩 Nuevo mensaje (${type}) ${msg.key} - Request ID: ${requestId}, time: ${new Date(Date.now())}`)
         PointSystem(messages)
+        if (msg.key.participant) checkRobResponse(msg.key.participant, text)
 
       } else {
         const jid = msg.key.remoteJid!

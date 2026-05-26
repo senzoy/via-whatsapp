@@ -19,6 +19,8 @@ import { Birthday } from "./member/birthday.js";
 import { SopaDePata } from "./moderation/sopadepata.js";
 import { Verify } from "./member/verify.js";
 import { Album } from "./moderation/album.js";
+import { Bank, Deposit, Withdraw } from "./bank/banco.js";
+import { Rob } from "./member/rob.js";
 
 export {
     Profile,
@@ -42,4 +44,8 @@ export {
     SopaDePata,
     Verify,
     Album,
+    Bank,
+    Deposit,
+    Withdraw,
+    Rob,
 }

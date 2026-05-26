@@ -1,9 +1,10 @@
 import { Bot } from "./core/core.js";
 import dotenv from 'dotenv';
 dotenv.config();
-import { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Wallet, MoneyTop, Daily, Points, Verify, Album, Birthday, SopaDePata, } from './commands/index.js';
+import { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Wallet, MoneyTop, Daily, Points, Verify, Album, Birthday, SopaDePata, Bank, Deposit, Withdraw, Rob, } from './commands/index.js';
 import cron from 'node-cron';
 import { getBirthdaysToday } from "./db/mongodb.js";
+import { resetAllDailyWithdraws } from "./db/banco.js";
 var Commands;
 (function (Commands) {
     Commands["INFO"] = "info";
@@ -31,56 +32,76 @@ var Commands;
     Commands["VERIFY"] = "verify";
     Commands["ALBUM"] = "maxnini";
     Commands["NEYMAR"] = "neymar";
+    Commands["BANK"] = "bank";
     Commands["DEPOSIT"] = "deposit";
+    Commands["WITHDRAW"] = "withdraw";
+    Commands["ROB"] = "rob";
     Commands["PAGARNEYMAR"] = "pagarneymar";
 })(Commands || (Commands = {}));
 await Bot.connect();
-// Bot.command(Commands.PROFILE, (ctx) => {
-//   if (ctx.admin) Profile(ctx)
-// })
-// Bot.command(Commands.LOCK, (ctx) => {
-//   if (ctx.admin) Lock(ctx)
-// })
-// Bot.command(Commands.UNLOCK, (ctx) => {
-//   if (ctx.admin) Unlock(ctx)
-// })
-// Bot.command(Commands.WARN, (ctx) => {
-//   if (ctx.admin) Warn(ctx)
-// })
-// Bot.command(Commands.WARNINGS, (ctx) => {
-//   if (ctx.admin) Warnings(ctx)
-// })
-// Bot.command(Commands.TOP, (ctx) => {
-//   if (ctx.admin) Top(ctx)
-// })
-// Bot.command(Commands.KICK, (ctx) => {
-//   if (ctx.admin) Kick(ctx)
-// })
-// Bot.command(Commands.VERIFY, Verify)
-// Bot.command(Commands.YAPPY, Yappy)
-// Bot.command(Commands.WORK, Work)
-// Bot.command(Commands.ALBUM, (ctx) => {
-//   if (ctx.admin) Album(ctx)
-// })
-// Bot.command(Commands.WALLET, Wallet)
-// Bot.command(Commands.TOPPOINTS, (ctx) => {
-//   if (ctx.admin) Levels(ctx)
-// })
-// Bot.command(Commands.TOPMONEY, (ctx) => {
-//   if (ctx.admin) MoneyTop(ctx)
-// })
-// Bot.command(Commands.DAILY, Daily)
-// Bot.command(Commands.POINTS, (ctx) => {
-//   if (ctx.admin) Points(ctx)
-// })
-// Bot.command(Commands.BIRTHDAY, Birthday)
-// Bot.command('cumple', Birthday)
-// Bot.command(Commands.CUMPLEAÑOS, (ctx) => {
-//   if (ctx.admin) SopaDePata(ctx)
-// })
-// Bot.command(Commands.SOPADEPATA, (ctx) => {
-//   if (ctx.admin) SopaDePata(ctx)
-// })
+Bot.command(Commands.PROFILE, (ctx) => {
+    if (ctx.admin)
+        Profile(ctx);
+});
+Bot.command(Commands.LOCK, (ctx) => {
+    if (ctx.admin)
+        Lock(ctx);
+});
+Bot.command(Commands.UNLOCK, (ctx) => {
+    if (ctx.admin)
+        Unlock(ctx);
+});
+Bot.command(Commands.WARN, (ctx) => {
+    if (ctx.admin)
+        Warn(ctx);
+});
+Bot.command(Commands.WARNINGS, (ctx) => {
+    if (ctx.admin)
+        Warnings(ctx);
+});
+Bot.command(Commands.TOP, (ctx) => {
+    if (ctx.admin)
+        Top(ctx);
+});
+Bot.command(Commands.KICK, (ctx) => {
+    if (ctx.admin)
+        Kick(ctx);
+});
+Bot.command(Commands.VERIFY, Verify);
+Bot.command(Commands.YAPPY, Yappy);
+Bot.command(Commands.WORK, Work);
+Bot.command(Commands.ALBUM, (ctx) => {
+    if (ctx.admin)
+        Album(ctx);
+});
+Bot.command(Commands.WALLET, Wallet);
+Bot.command(Commands.TOPPOINTS, (ctx) => {
+    if (ctx.admin)
+        Levels(ctx);
+});
+Bot.command(Commands.TOPMONEY, (ctx) => {
+    if (ctx.admin)
+        MoneyTop(ctx);
+});
+Bot.command(Commands.DAILY, Daily);
+Bot.command(Commands.POINTS, (ctx) => {
+    if (ctx.admin)
+        Points(ctx);
+});
+Bot.command(Commands.BIRTHDAY, Birthday);
+Bot.command('cumple', Birthday);
+Bot.command(Commands.CUMPLEAÑOS, (ctx) => {
+    if (ctx.admin)
+        SopaDePata(ctx);
+});
+Bot.command(Commands.SOPADEPATA, (ctx) => {
+    if (ctx.admin)
+        SopaDePata(ctx);
+});
+Bot.command(Commands.BANK, Bank);
+Bot.command(Commands.DEPOSIT, Deposit);
+Bot.command(Commands.WITHDRAW, Withdraw);
+Bot.command(Commands.ROB, Rob);
 cron.schedule('1 0 * * *', async () => {
     console.log('🎂 Verificando cumpleaños de hoy...');
     const users = await getBirthdaysToday();
@@ -93,6 +114,12 @@ cron.schedule('1 0 * * *', async () => {
             delay: 2000
         });
     }
+}, {
+    timezone: 'America/Panama'
+});
+cron.schedule('0 0 * * *', async () => {
+    await resetAllDailyWithdraws();
+    console.log('🔄 Límites diarios bancarios reiniciados.');
 }, {
     timezone: 'America/Panama'
 });

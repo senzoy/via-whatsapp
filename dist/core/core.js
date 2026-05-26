@@ -4,6 +4,7 @@ import NodeCache from "node-cache";
 import QRCode from 'qrcode';
 import { Boom } from '@hapi/boom';
 import { PointSystem } from "../services/points.js";
+import { checkRobResponse } from "../libs/robbery.js";
 const groupCache = new NodeCache({ stdTTL: 5 * 60, useClones: false });
 class WABot {
     static useState = {};
@@ -73,8 +74,10 @@ class WABot {
                 '';
             console.log(msg.key.remoteJid);
             if (!text.startsWith(this.prefix)) {
-                console.log(`📩 Nuevo mensaje (${type}) ${msg.key} - Request ID: ${requestId}, time: ${Date.now()}`);
+                console.log(`📩 Nuevo mensaje (${type}) ${msg.key} - Request ID: ${requestId}, time: ${new Date(Date.now())}`);
                 PointSystem(messages);
+                if (msg.key.participant)
+                    checkRobResponse(msg.key.participant, text);
             }
             else {
                 const jid = msg.key.remoteJid;
