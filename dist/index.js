@@ -1,7 +1,7 @@
 import { Bot } from "./core/core.js";
 import dotenv from 'dotenv';
 dotenv.config();
-import { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Wallet, MoneyTop, Daily, Points, Verify, Album, Birthday, SopaDePata, Bank, Deposit, Withdraw, Rob, } from './commands/index.js';
+import { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Wallet, MoneyTop, Daily, Points, Verify, Album, Birthday, SopaDePata, Bank, Deposit, Withdraw, Rob, Multas, Pay, } from './commands/index.js';
 import cron from 'node-cron';
 import { getBirthdaysToday } from "./db/mongodb.js";
 import { resetAllDailyWithdraws } from "./db/banco.js";
@@ -36,6 +36,8 @@ var Commands;
     Commands["DEPOSIT"] = "deposit";
     Commands["WITHDRAW"] = "withdraw";
     Commands["ROB"] = "rob";
+    Commands["MULTAS"] = "multas";
+    Commands["PAY"] = "pay";
     Commands["PAGARNEYMAR"] = "pagarneymar";
 })(Commands || (Commands = {}));
 await Bot.connect();
@@ -102,6 +104,8 @@ Bot.command(Commands.BANK, Bank);
 Bot.command(Commands.DEPOSIT, Deposit);
 Bot.command(Commands.WITHDRAW, Withdraw);
 Bot.command(Commands.ROB, Rob);
+Bot.command(Commands.MULTAS, Multas);
+Bot.command(Commands.PAY, Pay);
 cron.schedule('1 0 * * *', async () => {
     console.log('🎂 Verificando cumpleaños de hoy...');
     const users = await getBirthdaysToday();

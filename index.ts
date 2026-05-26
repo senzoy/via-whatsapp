@@ -25,6 +25,8 @@ import {
   Deposit,
   Withdraw,
   Rob,
+  Multas,
+  Pay,
 } from './commands/index.js'
 import cron from 'node-cron'
 import { getBirthdaysToday } from "./db/mongodb.js";
@@ -61,6 +63,8 @@ enum Commands {
   DEPOSIT = 'deposit',
   WITHDRAW = 'withdraw',
   ROB = 'rob',
+  MULTAS = 'multas',
+  PAY = 'pay',
   PAGARNEYMAR = 'pagarneymar'
 }
 
@@ -116,6 +120,8 @@ Bot.command(Commands.BANK, Bank)
 Bot.command(Commands.DEPOSIT, Deposit)
 Bot.command(Commands.WITHDRAW, Withdraw)
 Bot.command(Commands.ROB, Rob)
+Bot.command(Commands.MULTAS, Multas)
+Bot.command(Commands.PAY, Pay)
 
 cron.schedule('1 0 * * *', async () => {
   console.log('🎂 Verificando cumpleaños de hoy...');

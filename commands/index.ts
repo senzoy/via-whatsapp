@@ -21,6 +21,8 @@ import { Verify } from "./member/verify.js";
 import { Album } from "./moderation/album.js";
 import { Bank, Deposit, Withdraw } from "./bank/banco.js";
 import { Rob } from "./member/rob.js";
+import { Multas } from "./member/multas.js";
+import { Pay } from "./member/pay.js";
 
 export {
     Profile,
@@ -48,4 +50,6 @@ export {
     Deposit,
     Withdraw,
     Rob,
+    Multas,
+    Pay,
 }

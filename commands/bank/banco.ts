@@ -47,6 +47,11 @@ export async function Deposit(ctx: CommandContext) {
   const userId = ctx.msg.key.participant as string;
   const send = (content: string) => Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content, reply: true, delay: 2000 });
 
+  const { isBankYappyBlocked } = await import("../../db/criminal.js");
+  if (await isBankYappyBlocked(userId)) {
+    return send("🔒 No puedes usar el banco porque fuiste atrapado por la policía intentando robar.");
+  }
+
   const member = await getMember(userId);
   if (!member) return send("Usuario no encontrado.");
 
@@ -95,6 +100,11 @@ export async function Deposit(ctx: CommandContext) {
 export async function Withdraw(ctx: CommandContext) {
   const userId = ctx.msg.key.participant as string;
   const send = (content: string) => Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content, reply: true, delay: 2000 });
+
+  const { isBankYappyBlocked } = await import("../../db/criminal.js");
+  if (await isBankYappyBlocked(userId)) {
+    return send("🔒 No puedes usar el banco porque fuiste atrapado por la policía intentando robar.");
+  }
 
   const member = await getMember(userId);
   if (!member) return send("Usuario no encontrado.");

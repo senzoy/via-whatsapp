@@ -1,8 +1,8 @@
 import type { CommandContext } from "../../libs/types.js";
 import { Bot } from "../../core/core.js";
 import { getMember } from "../../db/mongodb.js";
-import { getOrCreateCriminal } from "../../db/criminal.js";
-import { addPending, hasPending, scheduleSuccess } from "../../libs/robbery.js";
+import { getOrCreateCriminal, checkAndGetPenaltyStatus } from "../../db/criminal.js";
+import { addPending, hasPending, scheduleSuccess, triggerPoliceCatch, isRecentlyRobbed } from "../../libs/robbery.js";
 
 function isRobTime(): boolean {
   const now = new Date();
@@ -24,8 +24,17 @@ export async function Rob(ctx: CommandContext) {
 
   const thiefId = ctx.msg.key.participant as string;
 
+  const penalty = await checkAndGetPenaltyStatus(thiefId);
+  if (penalty.blocked) {
+    return send(penalty.message);
+  }
+
   if (victimId === thiefId) {
     return send("No puedes robarte a ti mismo.");
+  }
+
+  if (isRecentlyRobbed(victimId)) {
+    return send("Ese usuario fue robado recientemente. Tiene protección por 5 minutos.");
   }
 
   const [thief, victim] = await Promise.all([
@@ -61,11 +70,18 @@ export async function Rob(ctx: CommandContext) {
     return send("Ese usuario ya está siendo robado por alguien más.");
   }
 
-  const stealPercent = 0.1 + Math.random() * 0.1;
+  const stealPercent = 0.04 + Math.random() * 0.06;
   const stealAmount = Math.max(1, Math.floor(victimWallet * stealPercent));
-  const fine = Math.ceil(stealAmount * 0.5);
+  const fine = 10000 + stealAmount;
 
   const pending = { thiefId, victimId, amount: stealAmount, fine, jid: ctx.jid, timeout: null as unknown as NodeJS.Timeout };
+
+  // 20% police catch
+  if (Math.random() < 0.2) {
+    triggerPoliceCatch(pending);
+    return;
+  }
+
   scheduleSuccess(pending);
   addPending(victimId, pending);
 

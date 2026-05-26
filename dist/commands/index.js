@@ -21,4 +21,6 @@ import { Verify } from "./member/verify.js";
 import { Album } from "./moderation/album.js";
 import { Bank, Deposit, Withdraw } from "./bank/banco.js";
 import { Rob } from "./member/rob.js";
-export { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Ruleta, Slot, Wallet, MoneyTop, Casino, Daily, Points, Birthday, SopaDePata, Verify, Album, Bank, Deposit, Withdraw, Rob, };
+import { Multas } from "./member/multas.js";
+import { Pay } from "./member/pay.js";
+export { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Ruleta, Slot, Wallet, MoneyTop, Casino, Daily, Points, Birthday, SopaDePata, Verify, Album, Bank, Deposit, Withdraw, Rob, Multas, Pay, };

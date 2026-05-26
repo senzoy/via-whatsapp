@@ -1,8 +1,20 @@
 import { Bot } from "../../core/core.js";
 import { getMember, Transfer } from "../../db/mongodb.js";
 export async function Yappy(ctx) {
+    const { isBankYappyBlocked } = await import("../../db/criminal.js");
+    const userId = ctx.msg.key.participant;
+    if (await isBankYappyBlocked(userId)) {
+        Bot.sendMessage({
+            msg: ctx.msg,
+            jid: ctx.jid,
+            content: "🔒 No puedes usar Yappy porque fuiste atrapado por la policía intentando robar.",
+            reply: true,
+            delay: 1500,
+        });
+        return;
+    }
     const mentioned = ctx.mentions[0] || '';
-    const sender = await getMember(ctx.msg.key.participant);
+    const sender = await getMember(userId);
     const receiver = await getMember(mentioned);
     if (!sender || !receiver) {
         Bot.sendMessage({

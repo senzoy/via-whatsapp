@@ -40,6 +40,10 @@ export async function Bank(ctx) {
 export async function Deposit(ctx) {
     const userId = ctx.msg.key.participant;
     const send = (content) => Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content, reply: true, delay: 2000 });
+    const { isBankYappyBlocked } = await import("../../db/criminal.js");
+    if (await isBankYappyBlocked(userId)) {
+        return send("🔒 No puedes usar el banco porque fuiste atrapado por la policía intentando robar.");
+    }
     const member = await getMember(userId);
     if (!member)
         return send("Usuario no encontrado.");
@@ -81,6 +85,10 @@ export async function Deposit(ctx) {
 export async function Withdraw(ctx) {
     const userId = ctx.msg.key.participant;
     const send = (content) => Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content, reply: true, delay: 2000 });
+    const { isBankYappyBlocked } = await import("../../db/criminal.js");
+    if (await isBankYappyBlocked(userId)) {
+        return send("🔒 No puedes usar el banco porque fuiste atrapado por la policía intentando robar.");
+    }
     const member = await getMember(userId);
     if (!member)
         return send("Usuario no encontrado.");
