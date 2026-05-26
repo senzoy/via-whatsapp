@@ -18,6 +18,7 @@ const criminalSchema = new Schema({
   outstandingFine: { type: Number, default: 0 },
   fineDeadline: { type: Date, default: null },
   bankYappyBlockUntil: { type: Date, default: null },
+  inventory: { type: Map, of: Number, default: {} },
 });
 
 criminalSchema.index({ userId: 1 });
@@ -194,4 +195,21 @@ export async function isBankYappyBlocked(userId: string): Promise<boolean> {
   return false;
 }
 
+export async function getInventory(userId: string): Promise<Record<string, number>> {
+  const crim = await CriminalModel.findOne({ userId }).select('inventory').lean();
+  return (crim?.inventory as Record<string, number> | undefined) ?? {};
+}
+
+export async function addItem(userId: string, itemId: string, quantity: number) {
+  await CriminalModel.updateOne(
+    { userId },
+    { $inc: { [`inventory.${itemId}`]: quantity } as Record<string, number> }
+  );
+}
+
+export async function hasItem(userId: string, itemId: string, quantity: number = 1): Promise<boolean> {
+  const crim = await CriminalModel.findOne({ userId }).select('inventory').lean();
+  const inv = (crim?.inventory as Record<string, number> | undefined) ?? {};
+  return (inv[itemId] ?? 0) >= quantity;
+}
 

@@ -52,6 +52,11 @@ export async function Deposit(ctx: CommandContext) {
     return send("🔒 No puedes usar el banco porque fuiste atrapado por la policía intentando robar.");
   }
 
+  const { hasPending } = await import("../../libs/robbery.js");
+  if (hasPending(userId)) {
+    return send("🔒 No puedes depositar mientras estás siendo robado.");
+  }
+
   const member = await getMember(userId);
   if (!member) return send("Usuario no encontrado.");
 
@@ -104,6 +109,11 @@ export async function Withdraw(ctx: CommandContext) {
   const { isBankYappyBlocked } = await import("../../db/criminal.js");
   if (await isBankYappyBlocked(userId)) {
     return send("🔒 No puedes usar el banco porque fuiste atrapado por la policía intentando robar.");
+  }
+
+  const { hasPending } = await import("../../libs/robbery.js");
+  if (hasPending(userId)) {
+    return send("🔒 No puedes retirar mientras estás siendo robado.");
   }
 
   const member = await getMember(userId);

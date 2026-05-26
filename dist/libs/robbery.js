@@ -19,7 +19,7 @@ function setRecentlyRobbed(victimId) {
     const timeout = setTimeout(() => recentlyRobbed.delete(victimId), 5 * 60 * 1000);
     recentlyRobbed.set(victimId, timeout);
 }
-export function checkRobResponse(userId, text) {
+export async function checkRobResponse(userId, text) {
     const pending = pendingRobberies.get(userId);
     if (!pending)
         return false;
@@ -27,6 +27,17 @@ export function checkRobResponse(userId, text) {
     const lower = text.toLowerCase().trim();
     if (!keywords.some(k => lower.includes(k)))
         return false;
+    if (pending.blockMessage) {
+        const { Bot } = await import("../core/core.js");
+        Bot.sendMessage({
+            msg: null,
+            jid: pending.jid,
+            content: pending.blockMessage,
+            mentions: [userId],
+            delay: 1000,
+        });
+        return false;
+    }
     clearTimeout(pending.timeout);
     pendingRobberies.delete(userId);
     setRecentlyRobbed(userId);
@@ -65,7 +76,7 @@ async function processCaught(pending) {
     const finalRemaining = totalFine - paid;
     const workPenaltyMs = getWorkPenaltyDuration(criminal.criminalPoints + 1);
     await Promise.all([
-        setRobCooldown(pending.thiefId, 4 * 60 * 60 * 1000),
+        setRobCooldown(pending.thiefId, 2 * 60 * 60 * 1000),
         setWorkPenalty(pending.thiefId, workPenaltyMs),
         addCriminalPoints(pending.thiefId, 1),
         incrementRobStats(pending.thiefId, false),
@@ -84,7 +95,7 @@ async function processCaught(pending) {
     if (finalRemaining > 0) {
         lines.push(`📋 Multa pendiente: $${finalRemaining.toLocaleString('en-US')}`);
     }
-    lines.push(`⛔ No podrás trabajar durante ${workPenaltyMs / 60 / 60 / 1000}h.`, `🕐 Cooldown de robo: 4h`, `📈 Puntos criminales: +1 (total: ${criminal.criminalPoints + 1})`);
+    lines.push(`⛔ No podrás trabajar durante ${workPenaltyMs / 60 / 60 / 1000}h.`, `🕐 Cooldown de robo: 2h`, `📈 Puntos criminales: +1 (total: ${criminal.criminalPoints + 1})`);
     Bot.sendMessage({
         msg: null,
         jid: pending.jid,
@@ -110,7 +121,7 @@ async function processCaughtByPolice(pending) {
     const workPenaltyMs = getWorkPenaltyDuration(criminal.criminalPoints + 1);
     const bankBlockMs = getBankBlockDuration(criminal.criminalPoints);
     await Promise.all([
-        setRobCooldown(pending.thiefId, 4 * 60 * 60 * 1000),
+        setRobCooldown(pending.thiefId, 2 * 60 * 60 * 1000),
         setWorkPenalty(pending.thiefId, workPenaltyMs),
         addCriminalPoints(pending.thiefId, 1),
         incrementRobStats(pending.thiefId, false),
@@ -130,7 +141,7 @@ async function processCaughtByPolice(pending) {
     if (finalRemaining > 0) {
         lines.push(`📋 Multa pendiente: $${finalRemaining.toLocaleString('en-US')}`);
     }
-    lines.push(`🏦❌ Banco y Yappy bloqueados por ${bankBlockMs / 60 / 60 / 1000}h.`, `⛔ No podrás trabajar durante ${workPenaltyMs / 60 / 60 / 1000}h.`, `🕐 Cooldown de robo: 4h`, `📈 Puntos criminales: +1 (total: ${criminal.criminalPoints + 1})`);
+    lines.push(`🏦❌ Banco y Yappy bloqueados por ${bankBlockMs / 60 / 60 / 1000}h.`, `⛔ No podrás trabajar durante ${workPenaltyMs / 60 / 60 / 1000}h.`, `🕐 Cooldown de robo: 2h`, `📈 Puntos criminales: +1 (total: ${criminal.criminalPoints + 1})`);
     Bot.sendMessage({
         msg: null,
         jid: pending.jid,
@@ -146,7 +157,7 @@ async function processSuccess(pending) {
     await Promise.all([
         AddBalance(pending.thiefId, pending.amount),
         AddBalance(pending.victimId, -pending.amount),
-        setRobCooldown(pending.thiefId, 60 * 60 * 1000),
+        setRobCooldown(pending.thiefId, 30 * 60 * 1000),
         incrementRobStats(pending.thiefId, true),
     ]);
     Bot.sendMessage({
@@ -162,7 +173,7 @@ export function scheduleSuccess(pending) {
         pendingRobberies.delete(pending.victimId);
         setRecentlyRobbed(pending.victimId);
         processSuccess(pending);
-    }, 60 * 60 * 1000);
+    }, 30 * 60 * 1000);
 }
 export function triggerPoliceCatch(pending) {
     clearTimeout(pending.timeout);
@@ -172,17 +183,17 @@ export function triggerPoliceCatch(pending) {
 }
 function getWorkPenaltyDuration(points) {
     if (points >= 10)
-        return 24 * 60 * 60 * 1000;
+        return 12 * 60 * 60 * 1000;
     if (points >= 5)
-        return 8 * 60 * 60 * 1000;
-    if (points >= 3)
         return 4 * 60 * 60 * 1000;
-    return 2 * 60 * 60 * 1000;
+    if (points >= 3)
+        return 2 * 60 * 60 * 1000;
+    return 1 * 60 * 60 * 1000;
 }
 function getBankBlockDuration(points) {
     if (points >= 6)
-        return 8 * 60 * 60 * 1000;
-    if (points >= 3)
         return 4 * 60 * 60 * 1000;
-    return 2 * 60 * 60 * 1000;
+    if (points >= 3)
+        return 2 * 60 * 60 * 1000;
+    return 1 * 60 * 60 * 1000;
 }

@@ -7,6 +7,8 @@ interface PendingRobbery {
   fine: number;
   jid: string;
   timeout: NodeJS.Timeout;
+  item?: string;
+  blockMessage?: string;
 }
 
 const pendingRobberies = new Map<string, PendingRobbery>();
@@ -36,13 +38,25 @@ function setRecentlyRobbed(victimId: string) {
   recentlyRobbed.set(victimId, timeout);
 }
 
-export function checkRobResponse(userId: string, text: string): boolean {
+export async function checkRobResponse(userId: string, text: string): Promise<boolean> {
   const pending = pendingRobberies.get(userId);
   if (!pending) return false;
 
   const keywords = ['atrapado', 'rata', 'ladron'];
   const lower = text.toLowerCase().trim();
   if (!keywords.some(k => lower.includes(k))) return false;
+
+  if (pending.blockMessage) {
+    const { Bot } = await import("../core/core.js");
+    Bot.sendMessage({
+      msg: null as unknown as WAMessage,
+      jid: pending.jid,
+      content: pending.blockMessage,
+      mentions: [userId],
+      delay: 1000,
+    });
+    return false;
+  }
 
   clearTimeout(pending.timeout);
   pendingRobberies.delete(userId);
@@ -96,7 +110,7 @@ async function processCaught(pending: PendingRobbery) {
   const workPenaltyMs = getWorkPenaltyDuration(criminal.criminalPoints + 1);
 
   await Promise.all([
-    setRobCooldown(pending.thiefId, 4 * 60 * 60 * 1000),
+    setRobCooldown(pending.thiefId, 2 * 60 * 60 * 1000),
     setWorkPenalty(pending.thiefId, workPenaltyMs),
     addCriminalPoints(pending.thiefId, 1),
     incrementRobStats(pending.thiefId, false),
@@ -121,7 +135,7 @@ async function processCaught(pending: PendingRobbery) {
 
   lines.push(
     `⛔ No podrás trabajar durante ${workPenaltyMs / 60 / 60 / 1000}h.`,
-    `🕐 Cooldown de robo: 4h`,
+    `🕐 Cooldown de robo: 2h`,
     `📈 Puntos criminales: +1 (total: ${criminal.criminalPoints + 1})`,
   );
 
@@ -158,7 +172,7 @@ async function processCaughtByPolice(pending: PendingRobbery) {
   const bankBlockMs = getBankBlockDuration(criminal.criminalPoints);
 
   await Promise.all([
-    setRobCooldown(pending.thiefId, 4 * 60 * 60 * 1000),
+    setRobCooldown(pending.thiefId, 2 * 60 * 60 * 1000),
     setWorkPenalty(pending.thiefId, workPenaltyMs),
     addCriminalPoints(pending.thiefId, 1),
     incrementRobStats(pending.thiefId, false),
@@ -185,7 +199,7 @@ async function processCaughtByPolice(pending: PendingRobbery) {
   lines.push(
     `🏦❌ Banco y Yappy bloqueados por ${bankBlockMs / 60 / 60 / 1000}h.`,
     `⛔ No podrás trabajar durante ${workPenaltyMs / 60 / 60 / 1000}h.`,
-    `🕐 Cooldown de robo: 4h`,
+    `🕐 Cooldown de robo: 2h`,
     `📈 Puntos criminales: +1 (total: ${criminal.criminalPoints + 1})`,
   );
 
@@ -206,7 +220,7 @@ async function processSuccess(pending: PendingRobbery) {
   await Promise.all([
     AddBalance(pending.thiefId, pending.amount),
     AddBalance(pending.victimId, -pending.amount),
-    setRobCooldown(pending.thiefId, 60 * 60 * 1000),
+    setRobCooldown(pending.thiefId, 30 * 60 * 1000),
     incrementRobStats(pending.thiefId, true),
   ]);
 
@@ -224,7 +238,7 @@ export function scheduleSuccess(pending: PendingRobbery) {
     pendingRobberies.delete(pending.victimId);
     setRecentlyRobbed(pending.victimId);
     processSuccess(pending);
-  }, 60 * 60 * 1000);
+  }, 30 * 60 * 1000);
 }
 
 export function triggerPoliceCatch(pending: PendingRobbery) {
@@ -235,14 +249,14 @@ export function triggerPoliceCatch(pending: PendingRobbery) {
 }
 
 function getWorkPenaltyDuration(points: number): number {
-  if (points >= 10) return 24 * 60 * 60 * 1000;
-  if (points >= 5) return 8 * 60 * 60 * 1000;
-  if (points >= 3) return 4 * 60 * 60 * 1000;
-  return 2 * 60 * 60 * 1000;
+  if (points >= 10) return 12 * 60 * 60 * 1000;
+  if (points >= 5) return 4 * 60 * 60 * 1000;
+  if (points >= 3) return 2 * 60 * 60 * 1000;
+  return 1 * 60 * 60 * 1000;
 }
 
 function getBankBlockDuration(points: number): number {
-  if (points >= 6) return 8 * 60 * 60 * 1000;
-  if (points >= 3) return 4 * 60 * 60 * 1000;
-  return 2 * 60 * 60 * 1000;
+  if (points >= 6) return 4 * 60 * 60 * 1000;
+  if (points >= 3) return 2 * 60 * 60 * 1000;
+  return 1 * 60 * 60 * 1000;
 }

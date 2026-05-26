@@ -27,10 +27,14 @@ import {
   Rob,
   Multas,
   Pay,
+  Inventario,
+  ShopRob,
+  BuyRob,
+  Cheque,
 } from './commands/index.js'
 import cron from 'node-cron'
 import { getBirthdaysToday } from "./db/mongodb.js";
-import { resetAllDailyWithdraws } from "./db/banco.js";
+import { resetAllDailyWithdraws, resetAllDailyYappy } from "./db/banco.js";
 import type { WAMessage } from "baileys";
 
 enum Commands {
@@ -65,6 +69,10 @@ enum Commands {
   ROB = 'rob',
   MULTAS = 'multas',
   PAY = 'pay',
+  INVENTARIO = 'inventario',
+  TIENDAROB = 'tiendarob',
+  COMPRAR = 'comprar',
+  CHEQUE = 'cheque',
   PAGARNEYMAR = 'pagarneymar'
 }
 
@@ -122,6 +130,36 @@ Bot.command(Commands.WITHDRAW, Withdraw)
 Bot.command(Commands.ROB, Rob)
 Bot.command(Commands.MULTAS, Multas)
 Bot.command(Commands.PAY, Pay)
+// // Bot.command(Commands.INVENTARIO, Inventario)
+// Bot.command(Commands.TIENDAROB, ShopRob)
+// Bot.command(Commands.COMPRAR, BuyRob)
+Bot.command(Commands.CHEQUE, Cheque)
+
+// Reload pending cheques on restart
+import { getAllUnprocessedCheques, completeCheque } from "./db/cheque.js";
+import { AddBalance } from "./db/mongodb.js";
+getAllUnprocessedCheques().then(cheques => {
+  for (const c of cheques) {
+    const delay = new Date(c.completesAt).getTime() - Date.now();
+    if (delay <= 0) {
+      AddBalance(c.receiverId, c.amount);
+      completeCheque(c._id.toString());
+    } else {
+      setTimeout(async () => {
+        await AddBalance(c.receiverId, c.amount);
+        await completeCheque(c._id.toString());
+        Bot.sendMessage({
+          msg: null as unknown as WAMessage,
+          jid: c.jid,
+          content: `✅ Cheque de $${c.amount.toLocaleString('en-US')} de @${c.senderId.split('@')[0]} fue entregado a @${c.receiverId.split('@')[0]}.`,
+          mentions: [c.senderId, c.receiverId],
+          delay: 1000,
+        });
+      }, delay);
+    }
+  }
+  console.log(`🔄 ${cheques.length} cheques pendientes restaurados.`);
+});
 
 cron.schedule('1 0 * * *', async () => {
   console.log('🎂 Verificando cumpleaños de hoy...');
@@ -144,6 +182,7 @@ cron.schedule('1 0 * * *', async () => {
 
 cron.schedule('0 0 * * *', async () => {
   await resetAllDailyWithdraws();
+  await resetAllDailyYappy();
   console.log('🔄 Límites diarios bancarios reiniciados.');
 }, {
   timezone: 'America/Panama'

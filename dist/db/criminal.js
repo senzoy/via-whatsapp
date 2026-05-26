@@ -15,6 +15,7 @@ const criminalSchema = new Schema({
     outstandingFine: { type: Number, default: 0 },
     fineDeadline: { type: Date, default: null },
     bankYappyBlockUntil: { type: Date, default: null },
+    inventory: { type: Map, of: Number, default: {} },
 });
 criminalSchema.index({ userId: 1 });
 const CriminalModel = mongoose.model('Criminal', criminalSchema);
@@ -137,4 +138,16 @@ export async function isBankYappyBlocked(userId) {
         return true;
     await CriminalModel.updateOne({ userId }, { $set: { bankYappyBlockUntil: null } });
     return false;
+}
+export async function getInventory(userId) {
+    const crim = await CriminalModel.findOne({ userId }).select('inventory').lean();
+    return crim?.inventory ?? {};
+}
+export async function addItem(userId, itemId, quantity) {
+    await CriminalModel.updateOne({ userId }, { $inc: { [`inventory.${itemId}`]: quantity } });
+}
+export async function hasItem(userId, itemId, quantity = 1) {
+    const crim = await CriminalModel.findOne({ userId }).select('inventory').lean();
+    const inv = crim?.inventory ?? {};
+    return (inv[itemId] ?? 0) >= quantity;
 }

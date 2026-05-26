@@ -1,7 +1,9 @@
 import { Bot } from "../../core/core.js";
-import { getMember, Transfer } from "../../db/mongodb.js";
+import { getMember } from "../../db/mongodb.js";
+import { BancoModel, getOrCreateBanco, checkAndResetYappyDaily, getAccountLimits } from "../../db/banco.js";
 export async function Yappy(ctx) {
     const { isBankYappyBlocked } = await import("../../db/criminal.js");
+    const { hasPending } = await import("../../libs/robbery.js");
     const userId = ctx.msg.key.participant;
     if (await isBankYappyBlocked(userId)) {
         Bot.sendMessage({
@@ -13,61 +15,67 @@ export async function Yappy(ctx) {
         });
         return;
     }
-    const mentioned = ctx.mentions[0] || '';
-    const sender = await getMember(userId);
-    const receiver = await getMember(mentioned);
-    if (!sender || !receiver) {
+    if (hasPending(userId)) {
         Bot.sendMessage({
             msg: ctx.msg,
             jid: ctx.jid,
-            content: "No se pudo encontrar los usuarios, intenta de nuevo",
+            content: "🔒 No puedes enviar Yappy mientras estás siendo robado.",
             reply: true,
-            delay: 1500
+            delay: 1500,
         });
+        return;
+    }
+    const mentioned = ctx.mentions[0] || '';
+    if (!mentioned) {
+        Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content: "Debes mencionar a un usuario.", reply: true, delay: 1500 });
+        return;
+    }
+    const [sender, receiver] = await Promise.all([getMember(userId), getMember(mentioned)]);
+    if (!sender || !receiver) {
+        Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content: "Usuario no encontrado.", reply: true, delay: 1500 });
         return;
     }
     const amount = Number(ctx.args[1]);
     if (!Number.isInteger(amount) || amount <= 0) {
-        Bot.sendMessage({
-            msg: ctx.msg,
-            jid: ctx.jid,
-            content: "Por favor, ingresa una cantidad válida mayor a 0",
-            reply: true,
-            delay: 1500
-        });
+        Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content: "Ingresa una cantidad válida mayor a 0.", reply: true, delay: 1500 });
         return;
     }
-    if (amount > sender.bank.balance) {
-        Bot.sendMessage({
-            msg: ctx.msg,
-            jid: ctx.jid,
-            content: "No tienes suficiente saldo para realizar esta transaccion",
-            reply: true,
-            delay: 1500
-        });
+    const banco = await getOrCreateBanco(userId, sender.level || 0);
+    const limits = getAccountLimits(sender.level || 0);
+    if (amount > limits.yappyLimit) {
+        Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content: `Límite por transferencia: $${limits.yappyLimit.toLocaleString('en-US')}.`, reply: true, delay: 1500 });
         return;
     }
-    Transfer(sender.lib, receiver.lib, amount).then(() => {
-        Bot.sendMessage({
-            msg: ctx.msg,
-            jid: ctx.jid,
-            content: `
+    const updated = await checkAndResetYappyDaily(userId);
+    if (!updated) {
+        Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content: "Error al acceder al banco.", reply: true, delay: 1500 });
+        return;
+    }
+    const dailyRemaining = limits.yappyLimit * 10 - updated.yappyDailyUsed;
+    if (amount > dailyRemaining) {
+        Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content: `Límite diario alcanzado. Te quedan $${Math.max(0, dailyRemaining).toLocaleString('en-US')}.`, reply: true, delay: 1500 });
+        return;
+    }
+    if (banco.balance < amount) {
+        Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content: `No tienes suficiente saldo en el banco. Balance: $${banco.balance.toLocaleString('en-US')}.`, reply: true, delay: 1500 });
+        return;
+    }
+    await Promise.all([
+        BancoModel.updateOne({ userId }, { $inc: { balance: -amount, yappyDailyUsed: amount }, $set: { updatedAt: new Date() } }),
+    ]);
+    const { AddBalance } = await import("../../db/mongodb.js");
+    await AddBalance(mentioned, amount);
+    Bot.sendMessage({
+        msg: ctx.msg,
+        jid: ctx.jid,
+        content: `
       *🟠🔵 Yappy* 📱
 
       *De:* ${sender.name}
       *Para:* ${receiver.name}
       *Monto:* 💵 $${amount.toLocaleString('en-us')}
       `,
-            reply: true,
-            delay: 1500
-        });
-    }).catch(() => {
-        Bot.sendMessage({
-            msg: ctx.msg,
-            jid: ctx.jid,
-            content: "No se pudo enviar el dinero, intenta de nuevo",
-            reply: true,
-            delay: 1500
-        });
+        reply: true,
+        delay: 1500
     });
 }

@@ -1,11 +1,13 @@
 import type { CommandContext } from "../../libs/types.js";
 import { Bot } from "../../core/core.js";
 import { getMember } from "../../db/mongodb.js";
-import { getOrCreateCriminal, checkAndGetPenaltyStatus } from "../../db/criminal.js";
+import { getOrCreateCriminal, checkAndGetPenaltyStatus, hasItem, addItem } from "../../db/criminal.js";
 import { addPending, hasPending, scheduleSuccess, triggerPoliceCatch, isRecentlyRobbed } from "../../libs/robbery.js";
+import { getRobItem } from "../../assets/items.js";
+import type { RobItem } from "../../assets/items.js";
 
 function isRobTime(): boolean {
-  const now = new Date();
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Panama' }));
   const totalMinutes = now.getHours() * 60 + now.getMinutes();
   return totalMinutes >= 8 * 60 && totalMinutes < 21 * 60 + 30;
 }
@@ -70,25 +72,55 @@ export async function Rob(ctx: CommandContext) {
     return send("Ese usuario ya está siendo robado por alguien más.");
   }
 
+  let usedItem: RobItem | undefined;
+  const itemArg = ctx.args[1]?.toLowerCase();
+  if (itemArg) {
+    const item = getRobItem(itemArg);
+    if (!item) {
+      const list = ['cuerda', 'cloroformo', 'mordaza'].join(', ');
+      return send(`❌ El item "${itemArg}" no existe. Items disponibles: ${list}`);
+    }
+    if (!(await hasItem(thiefId, item.id, 1))) {
+      return send(`❌ No tienes ${item.name} en tu inventario.`);
+    }
+    usedItem = item;
+  }
+
   const stealPercent = 0.04 + Math.random() * 0.06;
   const stealAmount = Math.max(1, Math.floor(victimWallet * stealPercent));
   const fine = 10000 + stealAmount;
 
-  const pending = { thiefId, victimId, amount: stealAmount, fine, jid: ctx.jid, timeout: null as unknown as NodeJS.Timeout };
+  const pending: {
+    thiefId: string; victimId: string; amount: number; fine: number;
+    jid: string; timeout: NodeJS.Timeout; item?: string; blockMessage?: string;
+  } = { thiefId, victimId, amount: stealAmount, fine, jid: ctx.jid, timeout: null as unknown as NodeJS.Timeout };
+  if (usedItem) {
+    pending.item = usedItem.id;
+    pending.blockMessage = usedItem.blockMessage;
+  }
 
-  // 20% police catch
+  // 20% police catch (before item consumption)
   if (Math.random() < 0.2) {
     triggerPoliceCatch(pending);
     return;
   }
 
+  // Consume item after police check passes
+  if (usedItem) {
+    await addItem(thiefId, usedItem.id, -1);
+  }
+
   scheduleSuccess(pending);
   addPending(victimId, pending);
+
+  const victimMsg = usedItem
+    ? `🔔 @${victimId.split('@')[0]} alguien está intentando robarte!\n\nEl ladrón usó *${usedItem.name}*! ${usedItem.description}\n\nTienes 30 minutos para responder con *"atrapado"*, *"rata"* o *"ladron"* si puedes.`
+    : `🔔 @${victimId.split('@')[0]} alguien está intentando robarte!\n\nResponde con *"atrapado"*, *"rata"* o *"ladron"* para atrapar al ladrón.\n\nTienes 30 minutos para responder.`;
 
   Bot.sendMessage({
     msg: ctx.msg,
     jid: ctx.jid,
-    content: `🔔 @${victimId.split('@')[0]} alguien está intentando robarte!\n\nResponde con *"atrapado"*, *"rata"* o *"ladron"* para atrapar al ladrón.\n\nTienes 1 hora para responder.`,
+    content: victimMsg,
     mentions: [victimId],
     delay: 1000,
   });

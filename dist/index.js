@@ -1,10 +1,10 @@
 import { Bot } from "./core/core.js";
 import dotenv from 'dotenv';
 dotenv.config();
-import { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Wallet, MoneyTop, Daily, Points, Verify, Album, Birthday, SopaDePata, Bank, Deposit, Withdraw, Rob, Multas, Pay, } from './commands/index.js';
+import { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Wallet, MoneyTop, Daily, Points, Verify, Album, Birthday, SopaDePata, Bank, Deposit, Withdraw, Rob, Multas, Pay, Inventario, ShopRob, BuyRob, Cheque, } from './commands/index.js';
 import cron from 'node-cron';
 import { getBirthdaysToday } from "./db/mongodb.js";
-import { resetAllDailyWithdraws } from "./db/banco.js";
+import { resetAllDailyWithdraws, resetAllDailyYappy } from "./db/banco.js";
 var Commands;
 (function (Commands) {
     Commands["INFO"] = "info";
@@ -38,6 +38,10 @@ var Commands;
     Commands["ROB"] = "rob";
     Commands["MULTAS"] = "multas";
     Commands["PAY"] = "pay";
+    Commands["INVENTARIO"] = "inventario";
+    Commands["TIENDAROB"] = "tiendarob";
+    Commands["COMPRAR"] = "comprar";
+    Commands["CHEQUE"] = "cheque";
     Commands["PAGARNEYMAR"] = "pagarneymar";
 })(Commands || (Commands = {}));
 await Bot.connect();
@@ -106,6 +110,36 @@ Bot.command(Commands.WITHDRAW, Withdraw);
 Bot.command(Commands.ROB, Rob);
 Bot.command(Commands.MULTAS, Multas);
 Bot.command(Commands.PAY, Pay);
+// // Bot.command(Commands.INVENTARIO, Inventario)
+// Bot.command(Commands.TIENDAROB, ShopRob)
+// Bot.command(Commands.COMPRAR, BuyRob)
+Bot.command(Commands.CHEQUE, Cheque);
+// Reload pending cheques on restart
+import { getAllUnprocessedCheques, completeCheque } from "./db/cheque.js";
+import { AddBalance } from "./db/mongodb.js";
+getAllUnprocessedCheques().then(cheques => {
+    for (const c of cheques) {
+        const delay = new Date(c.completesAt).getTime() - Date.now();
+        if (delay <= 0) {
+            AddBalance(c.receiverId, c.amount);
+            completeCheque(c._id.toString());
+        }
+        else {
+            setTimeout(async () => {
+                await AddBalance(c.receiverId, c.amount);
+                await completeCheque(c._id.toString());
+                Bot.sendMessage({
+                    msg: null,
+                    jid: c.jid,
+                    content: `✅ Cheque de $${c.amount.toLocaleString('en-US')} de @${c.senderId.split('@')[0]} fue entregado a @${c.receiverId.split('@')[0]}.`,
+                    mentions: [c.senderId, c.receiverId],
+                    delay: 1000,
+                });
+            }, delay);
+        }
+    }
+    console.log(`🔄 ${cheques.length} cheques pendientes restaurados.`);
+});
 cron.schedule('1 0 * * *', async () => {
     console.log('🎂 Verificando cumpleaños de hoy...');
     const users = await getBirthdaysToday();
@@ -123,6 +157,7 @@ cron.schedule('1 0 * * *', async () => {
 });
 cron.schedule('0 0 * * *', async () => {
     await resetAllDailyWithdraws();
+    await resetAllDailyYappy();
     console.log('🔄 Límites diarios bancarios reiniciados.');
 }, {
     timezone: 'America/Panama'

@@ -23,6 +23,9 @@ import { Bank, Deposit, Withdraw } from "./bank/banco.js";
 import { Rob } from "./member/rob.js";
 import { Multas } from "./member/multas.js";
 import { Pay } from "./member/pay.js";
+import { Inventario } from "./member/inventario.js";
+import { ShopRob, BuyRob } from "./member/tiendarob.js";
+import { Cheque } from "./member/cheque.js";
 
 export {
     Profile,
@@ -52,4 +55,8 @@ export {
     Rob,
     Multas,
     Pay,
+    Inventario,
+    ShopRob,
+    BuyRob,
+    Cheque,
 }

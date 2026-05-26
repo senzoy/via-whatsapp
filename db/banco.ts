@@ -21,6 +21,8 @@ const bancoSchema = new Schema({
   dailyWithdrawLimit: { type: Number, default: 100_000 },
   dailyWithdrawUsed: { type: Number, default: 0 },
   lastWithdrawReset: { type: Date, default: Date.now },
+  yappyDailyUsed: { type: Number, default: 0 },
+  yappyLastReset: { type: Date, default: Date.now },
   transactions: [transactionSchema],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
@@ -39,13 +41,29 @@ interface AccountLimits {
   accountType: AccountType;
   maxBalance: number;
   dailyWithdrawLimit: number;
+  yappyLimit: number;
+  chequeLimit: number;
 }
 
 export function getAccountLimits(level: number): AccountLimits {
-  if (level >= 17000) return { accountType: 'elite', maxBalance: 100_000_000, dailyWithdrawLimit: 10_000_000 };
-  if (level >= 10000) return { accountType: 'vip', maxBalance: 50_000_000, dailyWithdrawLimit: 5_000_000 };
-  if (level >= 3000) return { accountType: 'premium', maxBalance: 10_000_000, dailyWithdrawLimit: 1_000_000 };
-  return { accountType: 'basic', maxBalance: 1_000_000, dailyWithdrawLimit: 100_000 };
+  if (level >= 17000) return { accountType: 'elite', maxBalance: 100_000_000, dailyWithdrawLimit: 10_000_000, yappyLimit: 10_000_000, chequeLimit: 100_000_000 };
+  if (level >= 10000) return { accountType: 'vip', maxBalance: 50_000_000, dailyWithdrawLimit: 5_000_000, yappyLimit: 2_500_000, chequeLimit: 50_000_000 };
+  if (level >= 3000) return { accountType: 'premium', maxBalance: 10_000_000, dailyWithdrawLimit: 1_000_000, yappyLimit: 500_000, chequeLimit: 10_000_000 };
+  return { accountType: 'basic', maxBalance: 1_000_000, dailyWithdrawLimit: 100_000, yappyLimit: 50_000, chequeLimit: 1_000_000 };
+}
+
+export async function checkAndResetYappyDaily(userId: string) {
+  const account = await BancoModel.findOne({ userId });
+  if (!account) return null;
+  const now = new Date();
+  const diff = now.getTime() - new Date(account.yappyLastReset).getTime();
+  if (diff >= 24 * 60 * 60 * 1000) {
+    account.yappyDailyUsed = 0;
+    account.yappyLastReset = now;
+    account.updatedAt = now;
+    await account.save();
+  }
+  return account;
 }
 
 export async function getOrCreateBanco(userId: string, level: number = 0) {
@@ -93,6 +111,16 @@ export async function resetAllDailyWithdraws() {
     $set: {
       dailyWithdrawUsed: 0,
       lastWithdrawReset: new Date(),
+      updatedAt: new Date()
+    }
+  });
+}
+
+export async function resetAllDailyYappy() {
+  await BancoModel.updateMany({}, {
+    $set: {
+      yappyDailyUsed: 0,
+      yappyLastReset: new Date(),
       updatedAt: new Date()
     }
   });

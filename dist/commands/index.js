@@ -23,4 +23,7 @@ import { Bank, Deposit, Withdraw } from "./bank/banco.js";
 import { Rob } from "./member/rob.js";
 import { Multas } from "./member/multas.js";
 import { Pay } from "./member/pay.js";
-export { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Ruleta, Slot, Wallet, MoneyTop, Casino, Daily, Points, Birthday, SopaDePata, Verify, Album, Bank, Deposit, Withdraw, Rob, Multas, Pay, };
+import { Inventario } from "./member/inventario.js";
+import { ShopRob, BuyRob } from "./member/tiendarob.js";
+import { Cheque } from "./member/cheque.js";
+export { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Ruleta, Slot, Wallet, MoneyTop, Casino, Daily, Points, Birthday, SopaDePata, Verify, Album, Bank, Deposit, Withdraw, Rob, Multas, Pay, Inventario, ShopRob, BuyRob, Cheque, };
