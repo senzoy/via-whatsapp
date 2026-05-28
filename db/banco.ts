@@ -17,7 +17,8 @@ const transactionSchema = new Schema({
 const bancoSchema = new Schema({
   userId: { type: String, required: true, unique: true },
   balance: { type: Number, default: 0 },
-  accountType: { type: String, enum: ['basic', 'premium', 'vip', 'elite'], default: 'basic' },
+  accountType: { type: String, default: 'basic' },
+  subscriptionUntil: { type: Date, default: null },
   maxBalance: { type: Number, default: 1_000_000 },
   dailyWithdrawLimit: { type: Number, default: 100_000 },
   dailyWithdrawUsed: { type: Number, default: 0 },
@@ -37,9 +38,7 @@ BancoModel.createCollection();
 
 export { BancoModel };
 
-export type AccountType = 'basic' | 'premium' | 'vip' | 'elite';
-
-const ACCOUNT_RANK: Record<AccountType, number> = { basic: 0, premium: 1, vip: 2, elite: 3 };
+const ACCOUNT_RANK: Record<string, number> = { basic: 0, premium: 1, vip: 2, elite: 3 };
 
 export async function checkAndResetYappyDaily(userId: string) {
   const account = await BancoModel.findOne({ userId });
@@ -57,7 +56,7 @@ export async function checkAndResetYappyDaily(userId: string) {
 
 export async function getOrCreateBanco(userId: string, level: number = 0) {
   let account = await BancoModel.findOne({ userId });
-  const limits = await getConfigLimits(level);
+  const limits = await getConfigLimits(level, account?.accountType, account?.subscriptionUntil);
 
   if (!account) {
     account = await BancoModel.create({
@@ -69,8 +68,8 @@ export async function getOrCreateBanco(userId: string, level: number = 0) {
       createdAt: new Date(),
       updatedAt: new Date()
     });
-  } else if (ACCOUNT_RANK[limits.accountType] > ACCOUNT_RANK[account.accountType as AccountType]) {
-    account.accountType = limits.accountType as any;
+  } else if ((ACCOUNT_RANK[limits.accountType] ?? -1) > (ACCOUNT_RANK[account.accountType] ?? -1)) {
+    account.accountType = limits.accountType;
     account.maxBalance = limits.maxBalance;
     account.dailyWithdrawLimit = limits.dailyWithdrawLimit;
     account.updatedAt = new Date();

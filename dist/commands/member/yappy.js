@@ -52,7 +52,7 @@ export async function Yappy(ctx) {
         return;
     }
     const banco = await getOrCreateBanco(userId, sender.level || 0);
-    const limits = await getAccountLimits(sender.level || 0);
+    const limits = await getAccountLimits(sender.level || 0, banco.accountType, banco.subscriptionUntil);
     if (amount > limits.yappyLimit) {
         Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content: `Límite por transferencia: $${limits.yappyLimit.toLocaleString('en-US')}.`, reply: true, delay: 1500 });
         return;
