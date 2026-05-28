@@ -1,7 +1,7 @@
 import type { CommandContext } from "../../libs/types.js";
 import { Bot } from "../../core/core.js";
 import { getMember, AddBalance } from "../../db/mongodb.js";
-import { getOrCreateBanco, checkAndResetDaily, BancoModel } from "../../db/banco.js";
+import { getOrCreateBanco, checkAndResetDaily, BancoModel, isFrozen } from "../../db/banco.js";
 import { getPendingLoans, getLoansTotalDue } from "../../db/loans.js";
 
 function parseAmount(str?: string): number | null {
@@ -32,11 +32,13 @@ export async function Bank(ctx: CommandContext) {
   const pendingLoans = await getPendingLoans(userId);
   const totalLoanDue = pendingLoans.reduce((sum, l) => sum + l.remainingBalance, 0);
 
+  const frozenStatus = account.frozen ? '❌ CONGELADA' : '✅ Activa';
   const content = [
     `🏦 *BANCO*`,
     ``,
     `💰 Balance: $${account.balance.toLocaleString('en-US')}`,
     `📋 Tipo: ${account.accountType.toUpperCase()}`,
+    `🔐 Estado: ${frozenStatus}`,
     `🔒 Límite máximo: $${account.maxBalance.toLocaleString('en-US')}`,
     `💳 Límite diario: $${account.dailyWithdrawLimit.toLocaleString('en-US')}`,
     `📤 Retirado hoy: $${updated.dailyWithdrawUsed.toLocaleString('en-US')}`,
@@ -65,6 +67,10 @@ export async function Bank(ctx: CommandContext) {
 export async function Deposit(ctx: CommandContext) {
   const userId = ctx.msg.key.participant as string;
   const send = (content: string) => Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content, reply: true, delay: 2000 });
+
+  if (await isFrozen(userId)) {
+    return send("❌ Tu cuenta bancaria está congelada. No puedes realizar movimientos.");
+  }
 
   const { isBankYappyBlocked } = await import("../../db/criminal.js");
   if (await isBankYappyBlocked(userId)) {
@@ -124,6 +130,10 @@ export async function Deposit(ctx: CommandContext) {
 export async function Withdraw(ctx: CommandContext) {
   const userId = ctx.msg.key.participant as string;
   const send = (content: string) => Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content, reply: true, delay: 2000 });
+
+  if (await isFrozen(userId)) {
+    return send("❌ Tu cuenta bancaria está congelada. No puedes realizar movimientos.");
+  }
 
   const { isBankYappyBlocked } = await import("../../db/criminal.js");
   if (await isBankYappyBlocked(userId)) {

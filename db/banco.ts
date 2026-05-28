@@ -23,6 +23,7 @@ const bancoSchema = new Schema({
   lastWithdrawReset: { type: Date, default: Date.now },
   yappyDailyUsed: { type: Number, default: 0 },
   yappyLastReset: { type: Date, default: Date.now },
+  frozen: { type: Boolean, default: false },
   transactions: [transactionSchema],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
@@ -114,6 +115,15 @@ export async function resetAllDailyWithdraws() {
       updatedAt: new Date()
     }
   });
+}
+
+export async function isFrozen(userId: string): Promise<boolean> {
+  const account = await BancoModel.findOne({ userId }).select('frozen');
+  return account?.frozen ?? false;
+}
+
+export async function setFrozen(userId: string, frozen: boolean) {
+  await BancoModel.updateOne({ userId }, { $set: { frozen, updatedAt: new Date() } });
 }
 
 export async function resetAllDailyYappy() {

@@ -8,6 +8,7 @@ import {
   clearInteractionPenalty,
 } from "../../db/criminal.js";
 import { getPendingLoans, getLoansTotalDue, reduceLoanBalance, payLoan } from "../../db/loans.js";
+import { isFrozen } from "../../db/banco.js";
 
 async function payLoans(ctx: CommandContext, userId: string, send: Function) {
   const pendingLoans = await getPendingLoans(userId);
@@ -43,7 +44,8 @@ async function payLoans(ctx: CommandContext, userId: string, send: Function) {
     remaining -= paidFromWallet;
   }
 
-  if (remaining > 0) {
+  const frozen = await isFrozen(userId);
+  if (remaining > 0 && !frozen) {
     const { BancoModel } = await import("../../db/banco.js");
     const bancoDoc = await BancoModel.findOne({ userId }).select('balance');
     const bankBalance = bancoDoc?.balance ?? 0;
@@ -132,6 +134,10 @@ export async function Pay(ctx: CommandContext) {
   const arg = ctx.args[0]?.toLowerCase();
   if (!arg) {
     return send("Uso: !pay <cantidad> | !pay all | !pay loan [cantidad]");
+  }
+
+  if (arg !== 'loan' && arg !== 'prestamo' && await isFrozen(userId)) {
+    return send("❌ Tu cuenta bancaria está congelada. No puedes pagar multas mientras esté congelada.");
   }
 
   if (arg === 'loan' || arg === 'prestamo') {

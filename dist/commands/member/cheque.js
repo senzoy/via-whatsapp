@@ -1,6 +1,6 @@
 import { Bot } from "../../core/core.js";
 import { getMember } from "../../db/mongodb.js";
-import { getOrCreateBanco, getAccountLimits, BancoModel } from "../../db/banco.js";
+import { getOrCreateBanco, getAccountLimits, BancoModel, isFrozen } from "../../db/banco.js";
 import { createCheque } from "../../db/cheque.js";
 export async function Cheque(ctx) {
     const send = (content) => Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content, reply: true, delay: 2000 });
@@ -16,6 +16,9 @@ export async function Cheque(ctx) {
     const amount = Number(ctx.args[1]);
     if (!Number.isInteger(amount) || amount <= 0) {
         return send("Ingresa una cantidad válida mayor a 0.");
+    }
+    if (await isFrozen(userId)) {
+        return send("❌ Tu cuenta bancaria está congelada. No puedes emitir cheques.");
     }
     const member = await getMember(userId);
     if (!member)

@@ -1,13 +1,25 @@
 import { Bot } from "../../core/core.js"
 import type { CommandContext } from "../../libs/types.js"
 import { getMember } from "../../db/mongodb.js"
-import { BancoModel, getOrCreateBanco, checkAndResetYappyDaily, getAccountLimits } from "../../db/banco.js"
+import { BancoModel, getOrCreateBanco, checkAndResetYappyDaily, getAccountLimits, isFrozen } from "../../db/banco.js"
 
 export async function Yappy(ctx: CommandContext) {
   const { isBankYappyBlocked } = await import("../../db/criminal.js");
   const { hasPending } = await import("../../libs/robbery.js");
 
   const userId = ctx.msg.key.participant as string;
+
+  if (await isFrozen(userId)) {
+    Bot.sendMessage({
+      msg: ctx.msg,
+      jid: ctx.jid,
+      content: "❌ Tu cuenta bancaria está congelada. No puedes realizar movimientos.",
+      reply: true,
+      delay: 1500,
+    });
+    return;
+  }
+
   if (await isBankYappyBlocked(userId)) {
     Bot.sendMessage({
       msg: ctx.msg,
