@@ -32,7 +32,7 @@ export async function Bank(ctx: CommandContext) {
   const pendingLoans = await getPendingLoans(userId);
   const totalLoanDue = pendingLoans.reduce((sum, l) => sum + l.remainingBalance, 0);
 
-  const frozenStatus = account.frozen ? '❌ CONGELADA' : '✅ Activa';
+  const frozenStatus = account.isFrozen ? '❌ CONGELADA' : '✅ Activa';
   const content = [
     `🏦 *BANCO*`,
     ``,

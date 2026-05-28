@@ -27,7 +27,7 @@ export async function Bank(ctx) {
     const lastTxns = account.transactions.slice(-5).reverse().map(t => `${t.type === 'deposit' ? '+' : '-'}$${t.amount.toLocaleString('en-US')} → $${t.balanceAfter.toLocaleString('en-US')}`).join('\n');
     const pendingLoans = await getPendingLoans(userId);
     const totalLoanDue = pendingLoans.reduce((sum, l) => sum + l.remainingBalance, 0);
-    const frozenStatus = account.frozen ? '❌ CONGELADA' : '✅ Activa';
+    const frozenStatus = account.isFrozen ? '❌ CONGELADA' : '✅ Activa';
     const content = [
         `🏦 *BANCO*`,
         ``,
