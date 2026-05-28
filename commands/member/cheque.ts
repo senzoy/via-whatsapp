@@ -34,8 +34,8 @@ export async function Cheque(ctx: CommandContext) {
   const banco = await getOrCreateBanco(userId, member.level || 0);
   const limits = await getAccountLimits(member.level || 0, banco.accountType, banco.subscriptionUntil);
 
-  if (amount > limits.chequeLimit) {
-    return send(`❌ Límite por cheque: $${limits.chequeLimit.toLocaleString('en-US')}. Tu cuenta es ${limits.accountType}.`);
+  if (amount > limits.maxTransfer) {
+    return send(`❌ Límite por cheque: $${limits.maxTransfer.toLocaleString('en-US')}. Tu cuenta es ${limits.accountType}.`);
   }
 
   if (banco.balance < amount) {

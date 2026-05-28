@@ -15,11 +15,11 @@ const configsSchema = new Schema({
 configsSchema.index({ key: 1 });
 
 export interface AccountTypeConfig {
+  minPoints?: number;
   maxBalance: number;
+  maxDeposit: number;
+  maxTransfer: number;
   dailyWithdrawLimit: number;
-  yappyLimit: number;
-  chequeLimit: number;
-  minLevel?: number;
   subscription?: boolean;
 }
 
@@ -34,13 +34,13 @@ export async function getAccountTypes(): Promise<Record<string, AccountTypeConfi
   cachedAccountTypes = (doc?.accountTypes as Record<string, AccountTypeConfig>) ?? null;
   if (!cachedAccountTypes) {
     cachedAccountTypes = {
-      basic: { maxBalance: 1_000_000, dailyWithdrawLimit: 100_000, yappyLimit: 50_000, chequeLimit: 1_000_000, minLevel: 0 },
-      premium: { maxBalance: 10_000_000, dailyWithdrawLimit: 1_000_000, yappyLimit: 500_000, chequeLimit: 10_000_000, minLevel: 3000 },
-      vip: { maxBalance: 50_000_000, dailyWithdrawLimit: 5_000_000, yappyLimit: 2_500_000, chequeLimit: 50_000_000, minLevel: 10000 },
-      elite: { maxBalance: 100_000_000, dailyWithdrawLimit: 10_000_000, yappyLimit: 10_000_000, chequeLimit: 100_000_000, minLevel: 17000 },
-      gold: { maxBalance: 25_000_000, dailyWithdrawLimit: 2_500_000, yappyLimit: 1_000_000, chequeLimit: 25_000_000, subscription: true },
-      platinum: { maxBalance: 75_000_000, dailyWithdrawLimit: 7_500_000, yappyLimit: 5_000_000, chequeLimit: 75_000_000, subscription: true },
-      diamond: { maxBalance: 200_000_000, dailyWithdrawLimit: 20_000_000, yappyLimit: 15_000_000, chequeLimit: 200_000_000, subscription: true },
+      basic: { maxBalance: 1_000_000, maxDeposit: 1_000_000, maxTransfer: 50_000, dailyWithdrawLimit: 100_000, minPoints: 0 },
+      premium: { maxBalance: 10_000_000, maxDeposit: 10_000_000, maxTransfer: 500_000, dailyWithdrawLimit: 1_000_000, minPoints: 3000 },
+      vip: { maxBalance: 50_000_000, maxDeposit: 50_000_000, maxTransfer: 2_500_000, dailyWithdrawLimit: 5_000_000, minPoints: 10000 },
+      elite: { maxBalance: 100_000_000, maxDeposit: 100_000_000, maxTransfer: 10_000_000, dailyWithdrawLimit: 10_000_000, minPoints: 17000 },
+      gold: { maxBalance: 25_000_000, maxDeposit: 25_000_000, maxTransfer: 1_000_000, dailyWithdrawLimit: 2_500_000, subscription: true },
+      platinum: { maxBalance: 75_000_000, maxDeposit: 75_000_000, maxTransfer: 5_000_000, dailyWithdrawLimit: 7_500_000, subscription: true },
+      diamond: { maxBalance: 200_000_000, maxDeposit: 200_000_000, maxTransfer: 15_000_000, dailyWithdrawLimit: 20_000_000, subscription: true },
     };
   }
   return cachedAccountTypes;
@@ -54,25 +54,25 @@ export async function getAccountLimits(
   level: number,
   currentType?: string,
   subscriptionUntil?: Date | null
-): Promise<{ accountType: string; maxBalance: number; dailyWithdrawLimit: number; yappyLimit: number; chequeLimit: number }> {
+): Promise<{ accountType: string; maxBalance: number; maxDeposit: number; maxTransfer: number; dailyWithdrawLimit: number }> {
   const types = await getAccountTypes();
 
   // Check if user has an active subscription type
   if (currentType && types[currentType]?.subscription && subscriptionUntil && Date.now() < new Date(subscriptionUntil).getTime()) {
-    const { minLevel: _, subscription: __, ...rest } = types[currentType]!;
+    const { minPoints: _, subscription: __, ...rest } = types[currentType]!;
     return { accountType: currentType, ...rest };
   }
 
-  // Level-based matching (only types with minLevel)
+  // Level-based matching (only types with minPoints)
   let matched = 'basic';
   let matchedConfig = types['basic'];
   for (const [type, config] of Object.entries(types)) {
-    if (config.minLevel !== undefined && level >= config.minLevel) {
+    if (config.minPoints !== undefined && level >= config.minPoints) {
       matched = type;
       matchedConfig = config;
     }
   }
-  const { minLevel: _, subscription: __, ...rest } = matchedConfig!;
+  const { minPoints: _, subscription: __, ...rest } = matchedConfig!;
   return { accountType: matched, ...rest };
 }
 

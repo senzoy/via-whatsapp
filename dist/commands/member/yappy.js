@@ -53,8 +53,8 @@ export async function Yappy(ctx) {
     }
     const banco = await getOrCreateBanco(userId, sender.level || 0);
     const limits = await getAccountLimits(sender.level || 0, banco.accountType, banco.subscriptionUntil);
-    if (amount > limits.yappyLimit) {
-        Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content: `Límite por transferencia: $${limits.yappyLimit.toLocaleString('en-US')}.`, reply: true, delay: 1500 });
+    if (amount > limits.maxTransfer) {
+        Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content: `Límite por transferencia: $${limits.maxTransfer.toLocaleString('en-US')}.`, reply: true, delay: 1500 });
         return;
     }
     const updated = await checkAndResetYappyDaily(userId);
@@ -62,7 +62,7 @@ export async function Yappy(ctx) {
         Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content: "Error al acceder al banco.", reply: true, delay: 1500 });
         return;
     }
-    const dailyRemaining = limits.yappyLimit * 10 - updated.yappyDailyUsed;
+    const dailyRemaining = limits.maxTransfer * 10 - updated.yappyDailyUsed;
     if (amount > dailyRemaining) {
         Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content: `Límite diario alcanzado. Te quedan $${Math.max(0, dailyRemaining).toLocaleString('en-US')}.`, reply: true, delay: 1500 });
         return;
