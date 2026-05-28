@@ -17,17 +17,17 @@ loanSchema.index({ userId: 1, status: 1 });
 const LoanModel = mongoose.model('Loan', loanSchema);
 LoanModel.createCollection();
 export async function getPendingLoans(userId) {
-    return LoanModel.find({ userId, status: 'pending' }).sort({ dueAt: 1 }).lean();
+    return LoanModel.find({ userId, remainingBalance: { $gt: 0 } }).sort({ dueAt: 1 }).lean();
 }
 export async function getLoansTotalDue(userId) {
     const result = await LoanModel.aggregate([
-        { $match: { userId, status: 'pending' } },
+        { $match: { userId, remainingBalance: { $gt: 0 } } },
         { $group: { _id: null, total: { $sum: '$remainingBalance' } } },
     ]);
     return result[0]?.total ?? 0;
 }
 export async function payLoan(loanId) {
-    await LoanModel.updateOne({ _id: loanId, status: 'pending' }, { $set: { remainingBalance: 0, status: 'paid', paidAt: new Date() } });
+    await LoanModel.updateOne({ _id: loanId }, { $set: { remainingBalance: 0, status: 'paid', paidAt: new Date() } });
 }
 export async function reduceLoanBalance(loanId, amount) {
     const loan = await LoanModel.findOne({ _id: loanId });

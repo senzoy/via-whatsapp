@@ -37,12 +37,12 @@ export interface LoanDoc {
 }
 
 export async function getPendingLoans(userId: string): Promise<any[]> {
-  return LoanModel.find({ userId, status: 'pending' }).sort({ dueAt: 1 }).lean();
+  return LoanModel.find({ userId, remainingBalance: { $gt: 0 } }).sort({ dueAt: 1 }).lean();
 }
 
 export async function getLoansTotalDue(userId: string): Promise<number> {
   const result = await LoanModel.aggregate([
-    { $match: { userId, status: 'pending' } },
+    { $match: { userId, remainingBalance: { $gt: 0 } } },
     { $group: { _id: null, total: { $sum: '$remainingBalance' } } },
   ]);
   return result[0]?.total ?? 0;
@@ -50,7 +50,7 @@ export async function getLoansTotalDue(userId: string): Promise<number> {
 
 export async function payLoan(loanId: string) {
   await LoanModel.updateOne(
-    { _id: loanId, status: 'pending' },
+    { _id: loanId },
     { $set: { remainingBalance: 0, status: 'paid', paidAt: new Date() } }
   );
 }
