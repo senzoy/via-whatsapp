@@ -1,6 +1,7 @@
 import { Bot } from "../../core/core.js";
 import { getMember, AddBalance } from "../../db/mongodb.js";
 import { getOrCreateBanco, checkAndResetDaily, BancoModel } from "../../db/banco.js";
+import { getPendingLoans, getLoansTotalDue } from "../../db/loans.js";
 function parseAmount(str) {
     if (!str)
         return null;
@@ -24,6 +25,8 @@ export async function Bank(ctx) {
     const availableSpace = Math.max(0, account.maxBalance - account.balance);
     const remainingDaily = account.dailyWithdrawLimit - updated.dailyWithdrawUsed;
     const lastTxns = account.transactions.slice(-5).reverse().map(t => `${t.type === 'deposit' ? '+' : '-'}$${t.amount.toLocaleString('en-US')} → $${t.balanceAfter.toLocaleString('en-US')}`).join('\n');
+    const pendingLoans = await getPendingLoans(userId);
+    const totalLoanDue = pendingLoans.reduce((sum, l) => sum + l.remainingBalance, 0);
     const content = [
         `🏦 *BANCO*`,
         ``,
@@ -33,9 +36,19 @@ export async function Bank(ctx) {
         `💳 Límite diario: $${account.dailyWithdrawLimit.toLocaleString('en-US')}`,
         `📤 Retirado hoy: $${updated.dailyWithdrawUsed.toLocaleString('en-US')}`,
         `📦 Espacio disponible: $${availableSpace.toLocaleString('en-US')}`,
-        `💸 Límite restante hoy: $${Math.max(0, remainingDaily).toLocaleString('en-US')}`
-    ].join('\n');
-    send(content);
+        `💸 Límite restante hoy: $${Math.max(0, remainingDaily).toLocaleString('en-US')}`,
+    ];
+    if (totalLoanDue > 0) {
+        content.push(``, `📋 *PRÉSTAMOS PENDIENTES*`);
+        for (const loan of pendingLoans) {
+            const dueStr = new Date(loan.dueAt).toLocaleDateString('es-PA', { timeZone: 'America/Panama' });
+            const timeLeft = Math.ceil((new Date(loan.dueAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+            content.push(`• Préstamo #${loan._id.toString().slice(-6)}: $${loan.remainingBalance.toLocaleString('en-US')}`, `  Vence: ${dueStr} (${timeLeft > 0 ? `${timeLeft}d` : '⚠️ vencido'})`);
+        }
+        content.push(``, `💡 Usa !pay loan para pagar tus préstamos.`);
+    }
+    const output = content.join('\n');
+    send(output);
 }
 export async function Deposit(ctx) {
     const userId = ctx.msg.key.participant;
