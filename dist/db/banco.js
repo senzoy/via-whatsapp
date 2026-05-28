@@ -29,6 +29,7 @@ bancoSchema.index({ userId: 1 });
 const BancoModel = mongoose.model('Banco', bancoSchema);
 BancoModel.createCollection();
 export { BancoModel };
+const ACCOUNT_RANK = { basic: 0, premium: 1, vip: 2, elite: 3 };
 export async function checkAndResetYappyDaily(userId) {
     const account = await BancoModel.findOne({ userId });
     if (!account)
@@ -57,7 +58,7 @@ export async function getOrCreateBanco(userId, level = 0) {
             updatedAt: new Date()
         });
     }
-    else if (account.accountType !== limits.accountType) {
+    else if (ACCOUNT_RANK[limits.accountType] > ACCOUNT_RANK[account.accountType]) {
         account.accountType = limits.accountType;
         account.maxBalance = limits.maxBalance;
         account.dailyWithdrawLimit = limits.dailyWithdrawLimit;

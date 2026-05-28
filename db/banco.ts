@@ -39,6 +39,8 @@ export { BancoModel };
 
 export type AccountType = 'basic' | 'premium' | 'vip' | 'elite';
 
+const ACCOUNT_RANK: Record<AccountType, number> = { basic: 0, premium: 1, vip: 2, elite: 3 };
+
 export async function checkAndResetYappyDaily(userId: string) {
   const account = await BancoModel.findOne({ userId });
   if (!account) return null;
@@ -67,7 +69,7 @@ export async function getOrCreateBanco(userId: string, level: number = 0) {
       createdAt: new Date(),
       updatedAt: new Date()
     });
-  } else if (account.accountType !== limits.accountType) {
+  } else if (ACCOUNT_RANK[limits.accountType] > ACCOUNT_RANK[account.accountType as AccountType]) {
     account.accountType = limits.accountType as any;
     account.maxBalance = limits.maxBalance;
     account.dailyWithdrawLimit = limits.dailyWithdrawLimit;
