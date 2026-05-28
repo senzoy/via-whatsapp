@@ -3,6 +3,7 @@ import { AddBalance, getMember } from "../../db/mongodb.js";
 import { getOutstandingFine, payFineFromWalletThenBank, reduceOutstandingFine, clearInteractionPenalty, } from "../../db/criminal.js";
 import { getPendingLoans, getLoansTotalDue, reduceLoanBalance, payLoan } from "../../db/loans.js";
 import { isFrozen } from "../../db/banco.js";
+import { addToBankFund } from "../../db/configs.js";
 async function payLoans(ctx, userId, send) {
     const pendingLoans = await getPendingLoans(userId);
     if (pendingLoans.length === 0) {
@@ -44,6 +45,9 @@ async function payLoans(ctx, userId, send) {
         }
     }
     const totalPaid = paidFromWallet + paidFromBank;
+    if (totalPaid > 0) {
+        await addToBankFund(totalPaid);
+    }
     // Apply payment to oldest loans first
     let toAllocate = totalPaid;
     for (const loan of pendingLoans) {

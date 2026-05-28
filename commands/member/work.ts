@@ -3,6 +3,7 @@ import { Bot } from "../../core/core.js";
 import { getMember, GetCooldown, UpdateCooldown, AddBalance } from "../../db/mongodb.js";
 import { getJob } from "../../assets/jobs.js";
 import { getOrCreateCriminal, getOutstandingFine, payFineFromWalletThenBank, checkAndGetPenaltyStatus, clearInteractionPenalty, setOutstandingFine } from "../../db/criminal.js";
+import { addToBankFund } from "../../db/configs.js";
 
 export async function Work(ctx: CommandContext) {
   const userId = `${ctx.msg.key.participant}`;
@@ -67,6 +68,10 @@ export async function Work(ctx: CommandContext) {
     deductedFromEarnings = Math.min(remainingFine, grossSalary);
     netEarnings = grossSalary - deductedFromEarnings;
     remainingFine = remainingFine - deductedFromEarnings;
+  }
+
+  if (deductedFromEarnings > 0) {
+    await addToBankFund(deductedFromEarnings);
   }
 
   // Update outstanding fine

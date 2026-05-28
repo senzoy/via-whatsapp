@@ -70,6 +70,7 @@ export async function reduceOutstandingFine(userId, amount) {
 export async function payFineFromWalletThenBank(userId, amount) {
     const { getMember, AddBalance } = await import("./mongodb.js");
     const { BancoModel } = await import("./banco.js");
+    const { addToBankFund } = await import("./configs.js");
     const member = await getMember(userId);
     const walletBalance = member?.bank?.balance ?? 0;
     let remaining = amount;
@@ -88,6 +89,10 @@ export async function payFineFromWalletThenBank(userId, amount) {
             await BancoModel.updateOne({ userId }, { $inc: { balance: -paidFromBank } });
             remaining -= paidFromBank;
         }
+    }
+    const totalPaid = paidFromWallet + paidFromBank;
+    if (totalPaid > 0) {
+        await addToBankFund(totalPaid);
     }
     return { paidFromWallet, paidFromBank, remaining };
 }

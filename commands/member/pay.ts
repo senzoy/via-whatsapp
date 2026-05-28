@@ -9,6 +9,7 @@ import {
 } from "../../db/criminal.js";
 import { getPendingLoans, getLoansTotalDue, reduceLoanBalance, payLoan } from "../../db/loans.js";
 import { isFrozen } from "../../db/banco.js";
+import { addToBankFund } from "../../db/configs.js";
 
 async function payLoans(ctx: CommandContext, userId: string, send: Function) {
   const pendingLoans = await getPendingLoans(userId);
@@ -57,6 +58,9 @@ async function payLoans(ctx: CommandContext, userId: string, send: Function) {
   }
 
   const totalPaid = paidFromWallet + paidFromBank;
+  if (totalPaid > 0) {
+    await addToBankFund(totalPaid);
+  }
 
   // Apply payment to oldest loans first
   let toAllocate = totalPaid;
