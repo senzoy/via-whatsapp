@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import dotenv from 'dotenv';
+import { getAccountLimits as getConfigLimits } from "./configs.js";
 dotenv.config();
 mongoose.connect(process.env.DB || '');
 const { Schema } = mongoose;
@@ -28,15 +29,6 @@ bancoSchema.index({ userId: 1 });
 const BancoModel = mongoose.model('Banco', bancoSchema);
 BancoModel.createCollection();
 export { BancoModel };
-export function getAccountLimits(level) {
-    if (level >= 17000)
-        return { accountType: 'elite', maxBalance: 100_000_000, dailyWithdrawLimit: 10_000_000, yappyLimit: 10_000_000, chequeLimit: 100_000_000 };
-    if (level >= 10000)
-        return { accountType: 'vip', maxBalance: 50_000_000, dailyWithdrawLimit: 5_000_000, yappyLimit: 2_500_000, chequeLimit: 50_000_000 };
-    if (level >= 3000)
-        return { accountType: 'premium', maxBalance: 10_000_000, dailyWithdrawLimit: 1_000_000, yappyLimit: 500_000, chequeLimit: 10_000_000 };
-    return { accountType: 'basic', maxBalance: 1_000_000, dailyWithdrawLimit: 100_000, yappyLimit: 50_000, chequeLimit: 1_000_000 };
-}
 export async function checkAndResetYappyDaily(userId) {
     const account = await BancoModel.findOne({ userId });
     if (!account)
@@ -53,7 +45,7 @@ export async function checkAndResetYappyDaily(userId) {
 }
 export async function getOrCreateBanco(userId, level = 0) {
     let account = await BancoModel.findOne({ userId });
-    const limits = getAccountLimits(level);
+    const limits = await getConfigLimits(level);
     if (!account) {
         account = await BancoModel.create({
             userId,

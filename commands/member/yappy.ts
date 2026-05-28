@@ -1,7 +1,8 @@
 import { Bot } from "../../core/core.js"
 import type { CommandContext } from "../../libs/types.js"
 import { getMember } from "../../db/mongodb.js"
-import { BancoModel, getOrCreateBanco, checkAndResetYappyDaily, getAccountLimits, isFrozen } from "../../db/banco.js"
+import { BancoModel, getOrCreateBanco, checkAndResetYappyDaily, isFrozen } from "../../db/banco.js"
+import { getAccountLimits } from "../../db/configs.js"
 
 export async function Yappy(ctx: CommandContext) {
   const { isBankYappyBlocked } = await import("../../db/criminal.js");
@@ -61,7 +62,7 @@ export async function Yappy(ctx: CommandContext) {
   }
 
   const banco = await getOrCreateBanco(userId, sender.level || 0);
-  const limits = getAccountLimits(sender.level || 0);
+  const limits = await getAccountLimits(sender.level || 0);
 
   if (amount > limits.yappyLimit) {
     Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content: `Límite por transferencia: $${limits.yappyLimit.toLocaleString('en-US')}.`, reply: true, delay: 1500 });

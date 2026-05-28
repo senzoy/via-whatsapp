@@ -1,6 +1,7 @@
 import { Bot } from "../../core/core.js";
 import { getMember } from "../../db/mongodb.js";
-import { getOrCreateBanco, getAccountLimits, BancoModel, isFrozen } from "../../db/banco.js";
+import { getOrCreateBanco, BancoModel, isFrozen } from "../../db/banco.js";
+import { getAccountLimits } from "../../db/configs.js";
 import { createCheque } from "../../db/cheque.js";
 export async function Cheque(ctx) {
     const send = (content) => Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content, reply: true, delay: 2000 });
@@ -24,7 +25,7 @@ export async function Cheque(ctx) {
     if (!member)
         return send("Usuario no encontrado.");
     const banco = await getOrCreateBanco(userId, member.level || 0);
-    const limits = getAccountLimits(member.level || 0);
+    const limits = await getAccountLimits(member.level || 0);
     if (amount > limits.chequeLimit) {
         return send(`❌ Límite por cheque: $${limits.chequeLimit.toLocaleString('en-US')}. Tu cuenta es ${limits.accountType}.`);
     }
