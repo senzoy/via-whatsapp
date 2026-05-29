@@ -204,7 +204,6 @@ const CASINO_ANNOUNCEMENT = `🚨📢 *ANUNCIO OFICIAL* 📢🚨
 
 🥶💸 *¡Busquen su nevera y recen que no explote su teléfono porque esto se va a poner loco!* 📱💥
 
-⏰ Disponible solo por *10 MINUTOS* antes del cierre
 💰🎯 Con un *JACKPOT DE 10 MILLONES* esperando dueño 😱🔥
 
 🎁✨ Además, *BONO ESPECIAL DE 20K* para entrar a jugar 💸🔥
@@ -226,9 +225,7 @@ const CASINO_ANNOUNCEMENT = `🚨📢 *ANUNCIO OFICIAL* 📢🚨
 ━━━━━━━━━━━━━━━
 
 🍀 Hoy la suerte puede cambiarlo TODO…
-🏆💵 entra ahora y no dejes que otro se lleve el premio gigante.
-
-⏳🏃‍♂️ *¡CORRE ANTES DEL CIERRE!*`;
+🏆💵 entra ahora y no dejes que otro se lleve el premio gigante.`;
 
 async function getGroupJids(): Promise<string[]> {
   try {
@@ -262,7 +259,7 @@ cron.schedule('0 20 * * *', async () => {
 
 // 8:30 PM — Casino opens + 20K bonus to all members
 cron.schedule('30 20 * * *', async () => {
-  console.log('🎰 Casino abierto — repartiendo bono de 20K...');
+  console.log('🎰 Casino abierto (8:30 PM) — repartiendo bono de 20K...');
   const jids = await getGroupJids();
   for (const jid of jids) {
     try {
@@ -274,7 +271,7 @@ cron.schedule('30 20 * * *', async () => {
       Bot.sendMessage({
         msg: null as unknown as WAMessage,
         jid,
-        content: `🎁 *BONO ESPECIAL DE 20K* 🎁\n\nSe han acreditado $20,000 a todos los miembros. ¡El casino ya está abierto! 🎰🔥`,
+        content: `🎰 *CASINO ABIERTO* 🎰\n\n🔥 El casino ya está disponible. ¡Suerte a todos!\n\n🎁 Se acreditaron $20,000 a todos los miembros.`,
         mentions: participants,
         delay: 1000,
       });
@@ -286,10 +283,34 @@ cron.schedule('30 20 * * *', async () => {
   timezone: 'America/Panama'
 });
 
-// 10:00 PM — Announcement
+// 8:40 PM — Casino closed
+cron.schedule('40 20 * * *', async () => {
+  console.log('🎰 Casino cerrado (8:40 PM)...');
+  await sendToAllGroups('🚫 *CASINO CERRADO* 🚫\n\nEl casino ha cerrado por hoy. ¡Nos vemos en la próxima ronda!');
+}, {
+  timezone: 'America/Panama'
+});
+
+// 10:00 PM — Announcement + casino opens
 cron.schedule('0 22 * * *', async () => {
-  console.log('🎰 Enviando anuncio de casino (10 PM)...');
-  await sendToAllGroups(CASINO_ANNOUNCEMENT);
+  console.log('🎰 Casino abierto (10 PM)...');
+  const jids = await getGroupJids();
+  for (const jid of jids) {
+    Bot.sendMessage({
+      msg: null as unknown as WAMessage,
+      jid,
+      content: `🎰 *CASINO ABIERTO* 🎰\n\n🔥 Segunda ronda — el casino está disponible. ¡Aprovecha!`,
+      delay: 1000,
+    });
+  }
+}, {
+  timezone: 'America/Panama'
+});
+
+// 10:10 PM — Casino closed
+cron.schedule('10 22 * * *', async () => {
+  console.log('🎰 Casino cerrado (10:10 PM)...');
+  await sendToAllGroups('🚫 *CASINO CERRADO* 🚫\n\nEl casino ha cerrado por hoy. ¡Nos vemos en la próxima ronda!');
 }, {
   timezone: 'America/Panama'
 });
