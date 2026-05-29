@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import dotenv from 'dotenv';
-import { getAccountLimits as getConfigLimits } from "./configs.js";
+import { getAccountLimits as getConfigLimits, getAccountRank } from "./configs.js";
 dotenv.config();
 mongoose.connect(process.env.DB || '');
 const { Schema } = mongoose;
@@ -30,7 +30,6 @@ bancoSchema.index({ userId: 1 });
 const BancoModel = mongoose.model('Banco', bancoSchema);
 BancoModel.createCollection();
 export { BancoModel };
-const ACCOUNT_RANK = { basic: 0, premium: 1, vip: 2, elite: 3 };
 export async function checkAndResetYappyDaily(userId) {
     const account = await BancoModel.findOne({ userId });
     if (!account)
@@ -59,12 +58,19 @@ export async function getOrCreateBanco(userId, level = 0) {
             updatedAt: new Date()
         });
     }
-    else if ((ACCOUNT_RANK[limits.accountType] ?? -1) > (ACCOUNT_RANK[account.accountType] ?? -1)) {
-        account.accountType = limits.accountType;
-        account.maxBalance = limits.maxBalance;
-        account.dailyWithdrawLimit = limits.dailyWithdrawLimit;
-        account.updatedAt = new Date();
-        await account.save();
+    else {
+        const rank = await getAccountRank();
+        const newRank = rank[limits.accountType] ?? -1;
+        const currentRank = rank[account.accountType] ?? -1;
+        if (limits.accountType !== account.accountType
+            ? newRank > currentRank
+            : limits.maxBalance !== account.maxBalance || limits.dailyWithdrawLimit !== account.dailyWithdrawLimit) {
+            account.accountType = limits.accountType;
+            account.maxBalance = limits.maxBalance;
+            account.dailyWithdrawLimit = limits.dailyWithdrawLimit;
+            account.updatedAt = new Date();
+            await account.save();
+        }
     }
     return account;
 }

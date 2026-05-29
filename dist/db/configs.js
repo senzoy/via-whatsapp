@@ -33,12 +33,32 @@ export async function getAccountTypes() {
 export function clearAccountTypesCache() {
     cachedAccountTypes = null;
 }
+export async function getAccountRank() {
+    const types = await getAccountTypes();
+    const rank = {};
+    let i = 0;
+    for (const type of Object.keys(types)) {
+        rank[type] = i++;
+    }
+    return rank;
+}
 export async function getAccountLimits(level, currentType, subscriptionUntil) {
     const types = await getAccountTypes();
-    // Check if user has an active subscription type
-    if (currentType && types[currentType]?.subscription && subscriptionUntil && Date.now() < new Date(subscriptionUntil).getTime()) {
-        const { minPoints: _, subscription: __, ...rest } = types[currentType];
-        return { accountType: currentType, ...rest };
+    // Check if user has an active subscription
+    const hasValidSubscription = subscriptionUntil && Date.now() < new Date(subscriptionUntil).getTime();
+    if (hasValidSubscription) {
+        // If currentType is a subscription type, use it directly
+        if (currentType && types[currentType]?.subscription) {
+            const { minPoints: _, subscription: __, ...rest } = types[currentType];
+            return { accountType: currentType, ...rest };
+        }
+        // Fallback: find the first subscription type with valid subscription
+        for (const [type, config] of Object.entries(types)) {
+            if (config.subscription) {
+                const { minPoints: _, subscription: __, ...rest } = config;
+                return { accountType: type, ...rest };
+            }
+        }
     }
     // Level-based matching (only types with minPoints)
     let matched = 'basic';

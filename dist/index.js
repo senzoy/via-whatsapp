@@ -15,7 +15,7 @@ var Commands;
     Commands["TOP"] = "top";
     Commands["TOPPOINTS"] = "toppoints";
     Commands["SLOT"] = "slot";
-    Commands["RULETTE"] = "ruleta";
+    Commands["RULETTE"] = "roulette";
     Commands["WARNINGS"] = "warnings";
     Commands["WARN"] = "warn";
     Commands["RESUME"] = "resume";
@@ -114,7 +114,7 @@ Bot.command(Commands.SLOT, Slot);
 Bot.command(Commands.RULETTE, Ruleta);
 Bot.command(Commands.MULTAS, Multas);
 Bot.command(Commands.PAY, Pay);
-// // Bot.command(Commands.INVENTARIO, Inventario)
+// Bot.command(Commands.INVENTARIO, Inventario)
 // Bot.command(Commands.TIENDAROB, ShopRob)
 // Bot.command(Commands.COMPRAR, BuyRob)
 Bot.command(Commands.CHEQUE, Cheque);
@@ -197,7 +197,7 @@ const CASINO_ANNOUNCEMENT = `🚨📢 *ANUNCIO OFICIAL* 📢🚨
 🏆💵 entra ahora y no dejes que otro se lleve el premio gigante.`;
 const CASINO_GROUP = '120363407682059377@g.us';
 // 9:00 PM — Announcement
-cron.schedule('0 21 * * *', async () => {
+cron.schedule('35 20 * * *', async () => {
     console.log('🎰 Enviando anuncio de casino (9 PM)...');
     Bot.sendMessage({
         msg: null,
