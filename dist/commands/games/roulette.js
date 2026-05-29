@@ -1,3 +1,4 @@
+import { getNextOpenTime, isCasinoOpen } from "../../libs/types.js";
 import { Bot } from "../../core/core.js";
 import { getMember, AddBalance, GetCooldown, UpdateCooldown, AddCasinoResult } from "../../db/mongodb.js";
 // ─────────────────────────────────────────────────────────────

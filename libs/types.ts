@@ -19,16 +19,26 @@ export enum SystemPoints {
 }
 
 
-// ─── Casino Schedule ──────────────────────────────────────────────────────────
+// ─── Casino Schedule (Panama timezone) ─────────────────────────────────────────
 
 const CASINO_HOURS = [
-  { open: { h: 15, m: 20 }, close: { h: 15, m: 25 } },  // 3:00 pm – 3:10 pm
-  { open: { h: 21, m: 20 }, close: { h: 21, m: 30 } },  // 9:00 pm – 9:10 pm
+  { open: { h: 20, m: 30 }, close: { h: 20, m: 40 } },  // 8:30 pm – 8:40 pm
+  { open: { h: 22, m: 0 }, close: { h: 22, m: 10 } },    // 10:00 pm – 10:10 pm
 ];
 
-export function isCasinoOpen(): boolean {
+function getPanamaMinutes(): number {
   const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const panamaStr = now.toLocaleString('en-US', { timeZone: 'America/Panama', hour12: false });
+  const parts = panamaStr.split(', ');
+  if (parts.length < 2) return 0;
+  const timePart = parts[1]!;
+  const timeParts = timePart.split(':').map(Number);
+  if (timeParts.length < 2) return 0;
+  return timeParts[0]! * 60 + timeParts[1]!;
+}
+
+export function isCasinoOpen(): boolean {
+  const currentMinutes = getPanamaMinutes();
 
   return CASINO_HOURS.some(({ open, close }) => {
     const openMinutes = open.h * 60 + open.m;
@@ -38,8 +48,7 @@ export function isCasinoOpen(): boolean {
 }
 
 export function getNextOpenTime(): string {
-  const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const currentMinutes = getPanamaMinutes();
 
   for (const { open } of CASINO_HOURS) {
     const openMinutes = open.h * 60 + open.m;
@@ -49,6 +58,7 @@ export function getNextOpenTime(): string {
   }
 
   // Ya pasaron ambos horarios — devuelve el primero del día siguiente
-  const first = CASINO_HOURS[0].open;
+  const first = CASINO_HOURS[0]?.open;
+  if (!first) return '20:30';
   return `${String(first.h).padStart(2, '0')}:${String(first.m).padStart(2, '0')}`;
 }

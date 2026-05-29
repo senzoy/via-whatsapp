@@ -187,3 +187,109 @@ cron.schedule('0 0 * * *', async () => {
 }, {
   timezone: 'America/Panama'
 });
+
+cron.schedule('20 21 * * *', async () => {
+  await resetAllDailyWithdraws();
+  await resetAllDailyYappy();
+  console.log('🔄 Límites diarios bancarios reiniciados.');
+}, {
+  timezone: 'America/Panama'
+});
+
+// ─── Casino schedule (Panama time) ─────────────────────────────────────────────
+
+const CASINO_ANNOUNCEMENT = `🚨📢 *ANUNCIO OFICIAL* 📢🚨
+
+🎰🔥 *¡EL CASINO VOLVIÓ!* 🔥🎰
+
+🥶💸 *¡Busquen su nevera y recen que no explote su teléfono porque esto se va a poner loco!* 📱💥
+
+⏰ Disponible solo por *10 MINUTOS* antes del cierre
+💰🎯 Con un *JACKPOT DE 10 MILLONES* esperando dueño 😱🔥
+
+🎁✨ Además, *BONO ESPECIAL DE 20K* para entrar a jugar 💸🔥
+
+━━━━━━━━━━━━━━━
+🎲 **COMANDOS DEL CASINO** 🎲
+
+🎡 *Ruleta*
+!roulette <rojo | negro> <apuesta>
+
+💡 Ejemplo:
+!roulette rojo 5000
+
+🎰 *Slot Machine*
+!slot <apuesta>
+
+💡 Ejemplo:
+!slot 2500
+━━━━━━━━━━━━━━━
+
+🍀 Hoy la suerte puede cambiarlo TODO…
+🏆💵 entra ahora y no dejes que otro se lleve el premio gigante.
+
+⏳🏃‍♂️ *¡CORRE ANTES DEL CIERRE!*`;
+
+async function getGroupJids(): Promise<string[]> {
+  try {
+    const groups = await Bot.socket.groupFetchAllParticipating();
+    return Object.keys(groups);
+  } catch {
+    return [];
+  }
+}
+
+async function sendToAllGroups(content: string, mentions?: string[]) {
+  const jids = await getGroupJids();
+  for (const jid of jids) {
+    Bot.sendMessage({
+      msg: null as unknown as WAMessage,
+      jid,
+      content,
+      ...(mentions ? { mentions } : {}),
+      delay: 1000,
+    });
+  }
+}
+
+// 8:00 PM — Announcement
+cron.schedule('0 20 * * *', async () => {
+  console.log('🎰 Enviando anuncio de casino (8 PM)...');
+  await sendToAllGroups(CASINO_ANNOUNCEMENT);
+}, {
+  timezone: 'America/Panama'
+});
+
+// 8:30 PM — Casino opens + 20K bonus to all members
+cron.schedule('30 20 * * *', async () => {
+  console.log('🎰 Casino abierto — repartiendo bono de 20K...');
+  const jids = await getGroupJids();
+  for (const jid of jids) {
+    try {
+      const meta = await Bot.getGroupMetadata(jid);
+      const participants = meta.participants.map(p => p.id);
+      for (const pid of participants) {
+        await AddBalance(pid, 20000);
+      }
+      Bot.sendMessage({
+        msg: null as unknown as WAMessage,
+        jid,
+        content: `🎁 *BONO ESPECIAL DE 20K* 🎁\n\nSe han acreditado $20,000 a todos los miembros. ¡El casino ya está abierto! 🎰🔥`,
+        mentions: participants,
+        delay: 1000,
+      });
+    } catch {
+      // skip errors per group
+    }
+  }
+}, {
+  timezone: 'America/Panama'
+});
+
+// 10:00 PM — Announcement
+cron.schedule('0 22 * * *', async () => {
+  console.log('🎰 Enviando anuncio de casino (10 PM)...');
+  await sendToAllGroups(CASINO_ANNOUNCEMENT);
+}, {
+  timezone: 'America/Panama'
+});

@@ -1,4 +1,5 @@
-import type { CommandContext, isCasinoOpen, getNextOpenTime } from "../../libs/types.js";
+import { isCasinoOpen, getNextOpenTime } from "../../libs/types.js";
+import type { CommandContext } from "../../libs/types.js";
 import { Bot } from "../../core/core.js";
 import {
   getMember,
