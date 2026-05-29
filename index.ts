@@ -255,10 +255,35 @@ async function sendToAllGroups(content: string, mentions?: string[]) {
   }
 }
 
-// 8:00 PM — Announcement
-cron.schedule('15 20 * * *', async () => {
-  console.log('🎰 Enviando anuncio de casino (8 PM)...');
+// 8:20 PM — Announcement
+cron.schedule('20 20 * * *', async () => {
+  console.log('🎰 Enviando anuncio de casino (8:20 PM)...');
   await sendToAllGroups(CASINO_ANNOUNCEMENT);
+}, {
+  timezone: 'America/Panama'
+});
+
+// 8:30 PM — Casino opens + 20K bonus to all members
+cron.schedule('30 20 * * *', async () => {
+  console.log('🎰 Casino abierto (8:30 PM) — repartiendo bono de 20K...');
+  const jids = await getGroupJids();
+  for (const jid of jids) {
+    try {
+      const meta = await Bot.getGroupMetadata(jid);
+      const participants = meta.participants.map(p => p.id);
+      for (const pid of participants) {
+        await AddBalance(pid, 20000);
+      }
+      Bot.sendMessage({
+        msg: null as unknown as WAMessage,
+        jid,
+        content: `🎰 *CASINO ABIERTO* 🎰\n\n🔥 El casino ya está disponible. ¡Suerte a todos!\n\n🎁 Se acreditaron $20,000 a todos los miembros.`,
+        delay: 1000,
+      });
+    } catch {
+      // skip errors per group
+    }
+  }
 }, {
   timezone: 'America/Panama'
 });

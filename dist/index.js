@@ -1,7 +1,7 @@
 import { Bot } from "./core/core.js";
 import dotenv from 'dotenv';
 dotenv.config();
-import { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Wallet, MoneyTop, Daily, Points, Verify, Album, Birthday, SopaDePata, Bank, Deposit, Withdraw, Rob, Multas, Pay, Inventario, ShopRob, BuyRob, Cheque, } from './commands/index.js';
+import { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Wallet, MoneyTop, Daily, Points, Verify, Album, Birthday, SopaDePata, Bank, Deposit, Withdraw, Rob, Multas, Pay, Slot, Ruleta, Inventario, ShopRob, BuyRob, Cheque, } from './commands/index.js';
 import cron from 'node-cron';
 import { getBirthdaysToday } from "./db/mongodb.js";
 import { resetAllDailyWithdraws, resetAllDailyYappy } from "./db/banco.js";
@@ -14,6 +14,8 @@ var Commands;
     Commands["SET"] = "set";
     Commands["TOP"] = "top";
     Commands["TOPPOINTS"] = "toppoints";
+    Commands["SLOT"] = "slot";
+    Commands["RULETTE"] = "ruleta";
     Commands["WARNINGS"] = "warnings";
     Commands["WARN"] = "warn";
     Commands["RESUME"] = "resume";
@@ -108,6 +110,8 @@ Bot.command(Commands.BANK, Bank);
 Bot.command(Commands.DEPOSIT, Deposit);
 Bot.command(Commands.WITHDRAW, Withdraw);
 Bot.command(Commands.ROB, Rob);
+Bot.command(Commands.SLOT, Slot);
+Bot.command(Commands.RULETTE, Ruleta);
 Bot.command(Commands.MULTAS, Multas);
 Bot.command(Commands.PAY, Pay);
 // // Bot.command(Commands.INVENTARIO, Inventario)
@@ -172,7 +176,7 @@ cron.schedule('20 21 * * *', async () => {
 // ─── Casino schedule (Panama time) ─────────────────────────────────────────────
 const CASINO_ANNOUNCEMENT = `🚨📢 *ANUNCIO OFICIAL* 📢🚨
 
-🎰🔥 *¡EL CASINO VOLVIÓ!* 🔥🎰
+🎰🔥 *¡EL CASINO VOLVIÓ DESDE LAS 8:30PM - 8:40PM!* 🔥🎰
 
 🥶💸 *¡Busquen su nevera y recen que no explote su teléfono porque esto se va a poner loco!* 📱💥
 
@@ -219,10 +223,35 @@ async function sendToAllGroups(content, mentions) {
         });
     }
 }
-// 8:00 PM — Announcement
-cron.schedule('0 20 * * *', async () => {
-    console.log('🎰 Enviando anuncio de casino (8 PM)...');
+// 8:20 PM — Announcement
+cron.schedule('20 20 * * *', async () => {
+    console.log('🎰 Enviando anuncio de casino (8:20 PM)...');
     await sendToAllGroups(CASINO_ANNOUNCEMENT);
+}, {
+    timezone: 'America/Panama'
+});
+// 8:30 PM — Casino opens + 20K bonus to all members
+cron.schedule('30 20 * * *', async () => {
+    console.log('🎰 Casino abierto (8:30 PM) — repartiendo bono de 20K...');
+    const jids = await getGroupJids();
+    for (const jid of jids) {
+        try {
+            const meta = await Bot.getGroupMetadata(jid);
+            const participants = meta.participants.map(p => p.id);
+            for (const pid of participants) {
+                await AddBalance(pid, 20000);
+            }
+            Bot.sendMessage({
+                msg: null,
+                jid,
+                content: `🎰 *CASINO ABIERTO* 🎰\n\n🔥 El casino ya está disponible. ¡Suerte a todos!\n\n🎁 Se acreditaron $20,000 a todos los miembros.`,
+                delay: 1000,
+            });
+        }
+        catch {
+            // skip errors per group
+        }
+    }
 }, {
     timezone: 'America/Panama'
 });
