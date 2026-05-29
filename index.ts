@@ -136,9 +136,9 @@ Bot.command(Commands.SLOT, Slot)
 Bot.command(Commands.RULETTE, Ruleta)
 Bot.command(Commands.MULTAS, Multas)
 Bot.command(Commands.PAY, Pay)
-// // Bot.command(Commands.INVENTARIO, Inventario)
-// Bot.command(Commands.TIENDAROB, ShopRob)
-// Bot.command(Commands.COMPRAR, BuyRob)
+Bot.command(Commands.INVENTARIO, Inventario)
+Bot.command(Commands.TIENDAROB, ShopRob)
+Bot.command(Commands.COMPRAR, BuyRob)
 Bot.command(Commands.CHEQUE, Cheque)
 
 // Reload pending cheques on restart
