@@ -271,7 +271,7 @@ cron.schedule('30 20 * * *', async () => {
       Bot.sendMessage({
         msg: null as unknown as WAMessage,
         jid,
-        content: `🎰 *CASINO ABIERTO* 🎰\n\n🔥 El casino ya está disponible. ¡Suerte a todos!\n\n🎁 Se acreditaron $20,000 a todos los miembros.`,
+        content: `@all 🎰 *CASINO ABIERTO* 🎰\n\n🔥 El casino ya está disponible. ¡Suerte a todos!\n\n🎁 Se acreditaron $20,000 a todos los miembros.`,
         mentions: participants,
         delay: 1000,
       });
