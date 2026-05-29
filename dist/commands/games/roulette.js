@@ -1,7 +1,6 @@
 import { getNextOpenTime, isCasinoOpen } from "../../libs/types.js";
 import { Bot } from "../../core/core.js";
 import { getMember, AddBalance, GetCooldown, UpdateCooldown, AddCasinoResult } from "../../db/mongodb.js";
-import { checkAndGetPenaltyStatus } from "../../db/criminal.js";
 // ─────────────────────────────────────────────────────────────
 // CONFIGURACIÓN
 // ─────────────────────────────────────────────────────────────
@@ -263,13 +262,6 @@ export async function Ruleta(ctx) {
         if (cooldown &&
             Date.now() < cooldown.getTime()) {
             return send("⏳ Espera a que la bola deje de girar...");
-        }
-        // ─────────────────────────────
-        // PENALIZACIÓN
-        // ─────────────────────────────
-        const penalty = await checkAndGetPenaltyStatus(userId);
-        if (penalty.blocked) {
-            return send(penalty.message);
         }
         // ─────────────────────────────
         // VALIDACIÓN

@@ -8,7 +8,8 @@ import {
   UpdateCooldown,
   AddCasinoResult
 } from "../../db/mongodb.js";
-import { checkAndGetPenaltyStatus } from "../../db/criminal.js";
+
+
 
 // ─────────────────────────────────────────────────────────────
 // CONFIG
@@ -271,17 +272,6 @@ export async function Slot(ctx: CommandContext) {
           : `${Math.ceil(ms / 60_000)}m`;
 
       return send(`❌ Máquina ocupada. Espera ${txt}`);
-    }
-
-    // ─────────────────────────────────
-    // PENALIZACIÓN
-    // ─────────────────────────────────
-
-    const penalty = await checkAndGetPenaltyStatus(userId);
-
-    if (penalty.blocked) {
-
-      return send(penalty.message);
     }
 
     // ─────────────────────────────────

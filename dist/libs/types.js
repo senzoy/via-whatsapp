@@ -8,7 +8,7 @@ export var SystemPoints;
 })(SystemPoints || (SystemPoints = {}));
 // ─── Casino Schedule (Panama timezone) ─────────────────────────────────────────
 const CASINO_HOURS = [
-    { open: { h: 20, m: 30 }, close: { h: 20, m: 40 } }, // 8:30 pm – 8:40 pm
+    { open: { h: 21, m: 20 }, close: { h: 21, m: 30 } }, // 9:20 pm – 9:30 pm
     { open: { h: 22, m: 0 }, close: { h: 22, m: 10 } }, // 10:00 pm – 10:10 pm
 ];
 function getPanamaMinutes() {
@@ -42,6 +42,6 @@ export function getNextOpenTime() {
     // Ya pasaron ambos horarios — devuelve el primero del día siguiente
     const first = CASINO_HOURS[0]?.open;
     if (!first)
-        return '20:30';
+        return '21:20';
     return `${String(first.h).padStart(2, '0')}:${String(first.m).padStart(2, '0')}`;
 }

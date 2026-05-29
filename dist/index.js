@@ -166,17 +166,10 @@ cron.schedule('0 0 * * *', async () => {
 }, {
     timezone: 'America/Panama'
 });
-cron.schedule('20 21 * * *', async () => {
-    await resetAllDailyWithdraws();
-    await resetAllDailyYappy();
-    console.log('🔄 Límites diarios bancarios reiniciados.');
-}, {
-    timezone: 'America/Panama'
-});
 // ─── Casino schedule (Panama time) ─────────────────────────────────────────────
 const CASINO_ANNOUNCEMENT = `🚨📢 *ANUNCIO OFICIAL* 📢🚨
 
-🎰🔥 *¡EL CASINO VOLVIÓ DESDE LAS 8:30PM - 8:40PM!* 🔥🎰
+🎰🔥 *¡EL CASINO VOLVIÓ DESDE LAS 9:20PM - 9:30PM!* 🔥🎰
 
 🥶💸 *¡Busquen su nevera y recen que no explote su teléfono porque esto se va a poner loco!* 📱💥
 
@@ -203,9 +196,9 @@ const CASINO_ANNOUNCEMENT = `🚨📢 *ANUNCIO OFICIAL* 📢🚨
 🍀 Hoy la suerte puede cambiarlo TODO…
 🏆💵 entra ahora y no dejes que otro se lleve el premio gigante.`;
 const CASINO_GROUP = '120363407682059377@g.us';
-// 8:20 PM — Announcement
-cron.schedule('20 20 * * *', async () => {
-    console.log('🎰 Enviando anuncio de casino (8:20 PM)...');
+// 9:00 PM — Announcement
+cron.schedule('0 21 * * *', async () => {
+    console.log('🎰 Enviando anuncio de casino (9 PM)...');
     Bot.sendMessage({
         msg: null,
         jid: CASINO_GROUP,
@@ -215,9 +208,9 @@ cron.schedule('20 20 * * *', async () => {
 }, {
     timezone: 'America/Panama'
 });
-// 8:30 PM — Casino opens + 20K bonus to all members
-cron.schedule('30 20 * * *', async () => {
-    console.log('🎰 Casino abierto (8:30 PM) — repartiendo bono de 20K...');
+// 9:10 PM — 20K bonus to all members
+cron.schedule('10 21 * * *', async () => {
+    console.log('🎰 Repartiendo bono de 20K (9:10 PM)...');
     try {
         const meta = await Bot.getGroupMetadata(CASINO_GROUP);
         const participants = meta.participants.map(p => p.id);
@@ -227,7 +220,7 @@ cron.schedule('30 20 * * *', async () => {
         Bot.sendMessage({
             msg: null,
             jid: CASINO_GROUP,
-            content: `🎰 *CASINO ABIERTO* 🎰\n\n🔥 El casino ya está disponible. ¡Suerte a todos!\n\n🎁 Se acreditaron $20,000 a todos los miembros.`,
+            content: `🎁 *BONO DE BIENVENIDA* 🎁\n\n🔥 Se acreditaron $20,000 a todos los miembros.`,
             delay: 1000,
         });
     }
@@ -237,9 +230,21 @@ cron.schedule('30 20 * * *', async () => {
 }, {
     timezone: 'America/Panama'
 });
-// 8:40 PM — Casino closed
-cron.schedule('40 20 * * *', async () => {
-    console.log('🎰 Casino cerrado (8:40 PM)...');
+// 9:20 PM — Casino opens
+cron.schedule('20 21 * * *', async () => {
+    console.log('🎰 Casino abierto (9:20 PM)...');
+    Bot.sendMessage({
+        msg: null,
+        jid: CASINO_GROUP,
+        content: `🎰 *CASINO ABIERTO* 🎰\n\n🔥 El casino ya está disponible. ¡Suerte a todos!`,
+        delay: 1000,
+    });
+}, {
+    timezone: 'America/Panama'
+});
+// 9:30 PM — Casino closed
+cron.schedule('30 21 * * *', async () => {
+    console.log('🎰 Casino cerrado (9:30 PM)...');
     Bot.sendMessage({
         msg: null,
         jid: CASINO_GROUP,

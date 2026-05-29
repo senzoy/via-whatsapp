@@ -1,7 +1,6 @@
 import { isCasinoOpen, getNextOpenTime } from "../../libs/types.js";
 import { Bot } from "../../core/core.js";
 import { getMember, AddBalance, GetCooldown, UpdateCooldown, AddCasinoResult } from "../../db/mongodb.js";
-import { checkAndGetPenaltyStatus } from "../../db/criminal.js";
 // ─────────────────────────────────────────────────────────────
 // CONFIG
 // ─────────────────────────────────────────────────────────────
@@ -178,13 +177,6 @@ export async function Slot(ctx) {
                 ? `${Math.ceil(ms / 1000)}s`
                 : `${Math.ceil(ms / 60_000)}m`;
             return send(`❌ Máquina ocupada. Espera ${txt}`);
-        }
-        // ─────────────────────────────────
-        // PENALIZACIÓN
-        // ─────────────────────────────────
-        const penalty = await checkAndGetPenaltyStatus(userId);
-        if (penalty.blocked) {
-            return send(penalty.message);
         }
         // ─────────────────────────────────
         // VALIDACIÓN

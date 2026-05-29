@@ -7,7 +7,8 @@ import {
     UpdateCooldown,
     AddCasinoResult
 } from "../../db/mongodb.js";
-import { checkAndGetPenaltyStatus } from "../../db/criminal.js";
+
+
 
 // ─────────────────────────────────────────────────────────────
 // CONFIGURACIÓN
@@ -396,18 +397,6 @@ export async function Ruleta(ctx: CommandContext) {
             return send(
                 "⏳ Espera a que la bola deje de girar..."
             );
-        }
-
-        // ─────────────────────────────
-        // PENALIZACIÓN
-        // ─────────────────────────────
-
-        const penalty =
-            await checkAndGetPenaltyStatus(userId);
-
-        if (penalty.blocked) {
-
-            return send(penalty.message);
         }
 
         // ─────────────────────────────
