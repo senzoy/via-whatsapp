@@ -228,7 +228,7 @@ const CASINO_ANNOUNCEMENT = `🚨📢 *ANUNCIO OFICIAL* 📢🚨
 const CASINO_GROUP = '120363407682059377@g.us';
 
 // 9:00 PM — Announcement
-cron.schedule('0 21 * * *', async () => {
+cron.schedule('35 20 * * *', async () => {
   console.log('🎰 Enviando anuncio de casino (9 PM)...');
   Bot.sendMessage({
     msg: null as unknown as WAMessage,
