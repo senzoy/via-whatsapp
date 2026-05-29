@@ -202,81 +202,37 @@ const CASINO_ANNOUNCEMENT = `🚨📢 *ANUNCIO OFICIAL* 📢🚨
 
 🍀 Hoy la suerte puede cambiarlo TODO…
 🏆💵 entra ahora y no dejes que otro se lleve el premio gigante.`;
-async function getGroupJids() {
-    try {
-        const groups = await Bot.socket.groupFetchAllParticipating();
-        return Object.keys(groups);
-    }
-    catch {
-        return [];
-    }
-}
-async function sendToAllGroups(content, mentions) {
-    const jids = await getGroupJids();
-    for (const jid of jids) {
-        Bot.sendMessage({
-            msg: null,
-            jid,
-            content,
-            ...(mentions ? { mentions } : {}),
-            delay: 1000,
-        });
-    }
-}
+const CASINO_GROUP = '120363407682059377@g.us';
 // 8:20 PM — Announcement
 cron.schedule('20 20 * * *', async () => {
     console.log('🎰 Enviando anuncio de casino (8:20 PM)...');
-    await sendToAllGroups(CASINO_ANNOUNCEMENT);
+    Bot.sendMessage({
+        msg: null,
+        jid: CASINO_GROUP,
+        content: CASINO_ANNOUNCEMENT,
+        delay: 1000,
+    });
 }, {
     timezone: 'America/Panama'
 });
 // 8:30 PM — Casino opens + 20K bonus to all members
 cron.schedule('30 20 * * *', async () => {
     console.log('🎰 Casino abierto (8:30 PM) — repartiendo bono de 20K...');
-    const jids = await getGroupJids();
-    for (const jid of jids) {
-        try {
-            const meta = await Bot.getGroupMetadata(jid);
-            const participants = meta.participants.map(p => p.id);
-            for (const pid of participants) {
-                await AddBalance(pid, 20000);
-            }
-            Bot.sendMessage({
-                msg: null,
-                jid,
-                content: `🎰 *CASINO ABIERTO* 🎰\n\n🔥 El casino ya está disponible. ¡Suerte a todos!\n\n🎁 Se acreditaron $20,000 a todos los miembros.`,
-                delay: 1000,
-            });
+    try {
+        const meta = await Bot.getGroupMetadata(CASINO_GROUP);
+        const participants = meta.participants.map(p => p.id);
+        for (const pid of participants) {
+            await AddBalance(pid, 20000);
         }
-        catch {
-            // skip errors per group
-        }
+        Bot.sendMessage({
+            msg: null,
+            jid: CASINO_GROUP,
+            content: `🎰 *CASINO ABIERTO* 🎰\n\n🔥 El casino ya está disponible. ¡Suerte a todos!\n\n🎁 Se acreditaron $20,000 a todos los miembros.`,
+            delay: 1000,
+        });
     }
-}, {
-    timezone: 'America/Panama'
-});
-// 8:30 PM — Casino opens + 20K bonus to all members
-cron.schedule('30 20 * * *', async () => {
-    console.log('🎰 Casino abierto (8:30 PM) — repartiendo bono de 20K...');
-    const jids = await getGroupJids();
-    for (const jid of jids) {
-        try {
-            const meta = await Bot.getGroupMetadata(jid);
-            const participants = meta.participants.map(p => p.id);
-            for (const pid of participants) {
-                await AddBalance(pid, 20000);
-            }
-            Bot.sendMessage({
-                msg: null,
-                jid,
-                content: `@all 🎰 *CASINO ABIERTO* 🎰\n\n🔥 El casino ya está disponible. ¡Suerte a todos!\n\n🎁 Se acreditaron $20,000 a todos los miembros.`,
-                mentions: participants,
-                delay: 1000,
-            });
-        }
-        catch {
-            // skip errors per group
-        }
+    catch {
+        console.error('Error en grupo casino');
     }
 }, {
     timezone: 'America/Panama'
@@ -284,29 +240,36 @@ cron.schedule('30 20 * * *', async () => {
 // 8:40 PM — Casino closed
 cron.schedule('40 20 * * *', async () => {
     console.log('🎰 Casino cerrado (8:40 PM)...');
-    await sendToAllGroups('🚫 *CASINO CERRADO* 🚫\n\nEl casino ha cerrado por hoy. ¡Nos vemos en la próxima ronda!');
+    Bot.sendMessage({
+        msg: null,
+        jid: CASINO_GROUP,
+        content: '🚫 *CASINO CERRADO* 🚫\n\nEl casino ha cerrado por hoy. ¡Nos vemos en la próxima ronda!',
+        delay: 1000,
+    });
 }, {
     timezone: 'America/Panama'
 });
 // 10:00 PM — Announcement + casino opens
 cron.schedule('0 22 * * *', async () => {
     console.log('🎰 Casino abierto (10 PM)...');
-    const jids = await getGroupJids();
-    for (const jid of jids) {
-        Bot.sendMessage({
-            msg: null,
-            jid,
-            content: `🎰 *CASINO ABIERTO* 🎰\n\n🔥 Segunda ronda — el casino está disponible. ¡Aprovecha!`,
-            delay: 1000,
-        });
-    }
+    Bot.sendMessage({
+        msg: null,
+        jid: CASINO_GROUP,
+        content: `🎰 *CASINO ABIERTO* 🎰\n\n🔥 Segunda ronda — el casino está disponible. ¡Aprovecha!`,
+        delay: 1000,
+    });
 }, {
     timezone: 'America/Panama'
 });
 // 10:10 PM — Casino closed
 cron.schedule('10 22 * * *', async () => {
     console.log('🎰 Casino cerrado (10:10 PM)...');
-    await sendToAllGroups('🚫 *CASINO CERRADO* 🚫\n\nEl casino ha cerrado por hoy. ¡Nos vemos en la próxima ronda!');
+    Bot.sendMessage({
+        msg: null,
+        jid: CASINO_GROUP,
+        content: '🚫 *CASINO CERRADO* 🚫\n\nEl casino ha cerrado por hoy. ¡Nos vemos en la próxima ronda!',
+        delay: 1000,
+    });
 }, {
     timezone: 'America/Panama'
 });
