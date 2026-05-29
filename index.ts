@@ -27,6 +27,8 @@ import {
   Rob,
   Multas,
   Pay,
+  Slot,
+  Ruleta,
   Inventario,
   ShopRob,
   BuyRob,
@@ -45,6 +47,8 @@ enum Commands {
   SET = 'set',
   TOP = 'top',
   TOPPOINTS = 'toppoints',
+  SLOT = 'slot',
+  RULETTE = 'ruleta',
   WARNINGS = 'warnings',
   WARN = 'warn',
   RESUME = 'resume',
@@ -128,6 +132,8 @@ Bot.command(Commands.BANK, Bank)
 Bot.command(Commands.DEPOSIT, Deposit)
 Bot.command(Commands.WITHDRAW, Withdraw)
 Bot.command(Commands.ROB, Rob)
+Bot.command(Commands.SLOT, Slot)
+Bot.command(Commands.RULETTE, Ruleta)
 Bot.command(Commands.MULTAS, Multas)
 Bot.command(Commands.PAY, Pay)
 // // Bot.command(Commands.INVENTARIO, Inventario)
@@ -200,7 +206,7 @@ cron.schedule('20 21 * * *', async () => {
 
 const CASINO_ANNOUNCEMENT = `🚨📢 *ANUNCIO OFICIAL* 📢🚨
 
-🎰🔥 *¡EL CASINO VOLVIÓ!* 🔥🎰
+🎰🔥 *¡EL CASINO VOLVIÓ DESDE LAS 8:30PM - 8:40PM!* 🔥🎰
 
 🥶💸 *¡Busquen su nevera y recen que no explote su teléfono porque esto se va a poner loco!* 📱💥
 
@@ -250,7 +256,7 @@ async function sendToAllGroups(content: string, mentions?: string[]) {
 }
 
 // 8:00 PM — Announcement
-cron.schedule('0 20 * * *', async () => {
+cron.schedule('15 20 * * *', async () => {
   console.log('🎰 Enviando anuncio de casino (8 PM)...');
   await sendToAllGroups(CASINO_ANNOUNCEMENT);
 }, {
