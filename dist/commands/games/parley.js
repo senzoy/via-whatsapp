@@ -95,5 +95,6 @@ export async function Parley(ctx) {
         lines.push(`─────────────────`);
     }
     lines.push(`🆔 Ticket: #${ticket.ticketCode}`);
+    Bot.socket.sendMessage(ctx.jid, { delete: ctx.msg.key });
     return send(lines.join('\n'));
 }

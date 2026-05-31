@@ -105,5 +105,6 @@ export async function Parley(ctx: CommandContext) {
 
   lines.push(`🆔 Ticket: #${ticket.ticketCode}`);
 
+  Bot.socket.sendMessage(ctx.jid, { delete: ctx.msg.key });
   return send(lines.join('\n'));
 }
