@@ -11,7 +11,14 @@ export async function Parley(ctx) {
     const member = await getMember(userId);
     if (!member)
         return send("❌ Usuario no encontrado.");
-    const ticket = await findTicketByCode(ticketCode);
+    let ticket;
+    try {
+        ticket = await findTicketByCode(ticketCode);
+    }
+    catch (e) {
+        console.error("[Parley] Error buscando ticket:", e);
+        return send("❌ Error al buscar el ticket en la base de datos.");
+    }
     if (!ticket)
         return send("❌ Ticket no encontrado.");
     if (ticket.userLib && ticket.userLib !== member.lib) {
@@ -19,23 +26,44 @@ export async function Parley(ctx) {
     }
     const wager = ticket.wager || 0;
     const walletBalance = member.bank?.balance || 0;
-    const pointsBalance = member.points || 0;
-    let deductedFrom = '';
-    if (!ticket.userLib) {
+    const levelBalance = member.level || 0;
+    let statusMsg = '';
+    if (ticket.userLib && ticket.userLib === member.lib) {
+        statusMsg = '✅ *Ticket ya pagado anteriormente*';
+    }
+    else {
         if (walletBalance >= wager) {
-            await AddBalance(member.lib, -wager);
-            deductedFrom = 'wallet';
+            try {
+                await AddBalance(member.lib, -wager);
+                statusMsg = `✅ *Pago exitoso* — $${wager.toLocaleString('en-US')} descontado de wallet`;
+            }
+            catch (e) {
+                console.error("[Parley] Error deducting wallet:", e);
+                return send("❌ Error al procesar el pago desde wallet.");
+            }
         }
-        else if (pointsBalance >= wager) {
-            await mongoose.model('Member').updateOne({ lib: member.lib }, { $inc: { points: -wager } });
-            deductedFrom = 'points';
+        else if (levelBalance >= wager) {
+            try {
+                await mongoose.model('Member').updateOne({ lib: member.lib }, { $inc: { level: -wager } });
+                statusMsg = `✅ *Pago exitoso* — ${wager.toLocaleString('en-US')} niveles descontados`;
+            }
+            catch (e) {
+                console.error("[Parley] Error deducting level:", e);
+                return send("❌ Error al procesar el pago con niveles.");
+            }
         }
         else {
             return send(`❌ *Saldo insuficiente*\n\n` +
-                `Necesitas: $${wager.toLocaleString('en-US')} en wallet o ${wager.toLocaleString('en-US')} puntos.\n` +
-                `Tienes: $${walletBalance.toLocaleString('en-US')} en wallet y ${pointsBalance.toLocaleString('en-US')} puntos.`);
+                `Necesitas: $${wager.toLocaleString('en-US')} en wallet o ${wager.toLocaleString('en-US')} niveles.\n` +
+                `Tienes: $${walletBalance.toLocaleString('en-US')} en wallet y ${levelBalance.toLocaleString('en-US')} niveles.`);
         }
-        await linkTicketToUser(ticket._id.toString(), member.lib);
+        try {
+            await linkTicketToUser(ticket._id.toString(), member.lib);
+        }
+        catch (e) {
+            console.error("[Parley] Error linking ticket:", e);
+            return send("❌ Error al vincular el ticket.");
+        }
     }
     const resultEmoji = ticket.result === 'won' ? '✅' : ticket.result === 'lost' ? '❌' : '⏳';
     const payoutStr = ticket.actualPayout
@@ -48,11 +76,13 @@ export async function Parley(ctx) {
         `💰 Apuesta: $${wager.toLocaleString('en-US')}`,
         `📈 Odds: ${ticket.odds || '-'}x`,
         `💵 Pago potencial: $${(ticket.potentialPayout || 0).toLocaleString('en-US')}`,
-        deductedFrom === 'wallet' ? `💳 Pagado desde wallet` : deductedFrom === 'points' ? `⭐ Pagado con puntos` : ``,
         `🏆 Resultado: ${resultEmoji} ${payoutStr}`,
-    ].filter(Boolean);
+        `─────────────────`,
+        statusMsg,
+    ];
+    lines.push(`─────────────────`);
     if (ticket.conditions?.length > 0) {
-        lines.push(`─────────────────`, `*Condiciones:*`);
+        lines.push(`📋 *Condiciones:*`);
         ticket.conditions.forEach((c, i) => {
             const op = c.operator || '';
             const val = c.value ?? '';
@@ -62,7 +92,8 @@ export async function Parley(ctx) {
             lines.push(`${i + 1}️⃣ ${c.targetName || '?'} — ${c.metric || '?'} ${op} ${val}${condOdds}`);
             lines.push(`   Estado: ${condStatus}${actualVal}`);
         });
+        lines.push(`─────────────────`);
     }
-    lines.push(`─────────────────`, `🆔 Ticket: #${ticket.ticketCode}`);
+    lines.push(`🆔 Ticket: #${ticket.ticketCode}`);
     return send(lines.join('\n'));
 }
