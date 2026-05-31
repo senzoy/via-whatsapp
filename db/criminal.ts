@@ -97,7 +97,7 @@ export async function reduceOutstandingFine(userId: string, amount: number) {
 
 export async function payFineFromWalletThenBank(userId: string, amount: number): Promise<{ paidFromWallet: number; paidFromBank: number; remaining: number }> {
   const { getMember, AddBalance } = await import("./mongodb.js");
-  const { BancoModel, isFrozen } = await import("./banco.js");
+  const { BancoModel, isFrozen } = await import("./bank.js");
   const { addToBankFund } = await import("./configs.js");
 
   const member = await getMember(userId);

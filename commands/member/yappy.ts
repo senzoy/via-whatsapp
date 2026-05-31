@@ -1,7 +1,7 @@
 import { Bot } from "../../core/core.js"
 import type { CommandContext } from "../../libs/types.js"
 import { getMember } from "../../db/mongodb.js"
-import { BancoModel, getOrCreateBanco, checkAndResetYappyDaily, isFrozen } from "../../db/banco.js"
+import { BancoModel, getOrCreateBanco, checkAndResetYappyDaily, isFrozen } from "../../db/bank.js"
 import { getAccountLimits } from "../../db/configs.js"
 
 export async function Yappy(ctx: CommandContext) {

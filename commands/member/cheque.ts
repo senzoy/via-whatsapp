@@ -1,7 +1,7 @@
 import type { CommandContext } from "../../libs/types.js";
 import { Bot } from "../../core/core.js";
 import { getMember } from "../../db/mongodb.js";
-import { getOrCreateBanco, BancoModel, isFrozen } from "../../db/banco.js";
+import { getOrCreateBanco, BancoModel, isFrozen } from "../../db/bank.js";
 import { getAccountLimits } from "../../db/configs.js";
 import { createCheque } from "../../db/cheque.js";
 

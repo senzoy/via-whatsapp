@@ -1,7 +1,7 @@
 import type { CommandContext } from "../../libs/types.js";
 import { Bot } from "../../core/core.js";
 import { getMember, AddBalance } from "../../db/mongodb.js";
-import { getOrCreateBanco, checkAndResetDaily, BancoModel, isFrozen } from "../../db/banco.js";
+import { getOrCreateBanco, checkAndResetDaily, BancoModel, isFrozen } from "../../db/bank.js";
 import { getPendingLoans, getLoansTotalDue } from "../../db/loans.js";
 
 function parseAmount(str?: string): number | null {

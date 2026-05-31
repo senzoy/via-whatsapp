@@ -5,6 +5,14 @@ mongoose.connect(process.env.DB || '');
 const { Schema } = mongoose;
 const configsSchema = new Schema({
     key: { type: String, required: true, unique: true },
+    interestRate: { type: Number, default: 2.0 },
+    interestFrequency: { type: String, default: 'weekly' },
+    maxDeposit: { type: Number, default: 100000 },
+    transferFee: { type: Number, default: 5.0 },
+    economyPaused: { type: Boolean, default: false },
+    suspiciousThreshold: { type: Number, default: 50000 },
+    suspiciousTimeWindow: { type: Number, default: 60 },
+    updatedAt: { type: Date, default: Date.now },
     bankFundBalance: { type: Number, default: 0 },
     accountTypes: { type: Schema.Types.Mixed },
 }, { strict: false });
@@ -16,7 +24,21 @@ export async function getAccountTypes() {
     if (cachedAccountTypes)
         return cachedAccountTypes;
     const doc = await ConfigsModel.findOne({ key: 'global' }).select('accountTypes');
-    cachedAccountTypes = doc?.accountTypes ?? null;
+    const raw = doc?.accountTypes;
+    if (Array.isArray(raw)) {
+        cachedAccountTypes = {};
+        for (const entry of raw) {
+            if (entry?.name) {
+                const { name, ...config } = entry;
+                cachedAccountTypes[name] = config;
+            }
+        }
+        if (Object.keys(cachedAccountTypes).length === 0)
+            cachedAccountTypes = null;
+    }
+    else {
+        cachedAccountTypes = raw ?? null;
+    }
     if (!cachedAccountTypes) {
         cachedAccountTypes = {
             basic: { maxBalance: 1_000_000, maxDeposit: 1_000_000, maxTransfer: 50_000, dailyWithdrawLimit: 100_000, minPoints: 0 },

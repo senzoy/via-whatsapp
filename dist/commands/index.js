@@ -26,4 +26,5 @@ import { Pay } from "./member/pay.js";
 import { Inventario } from "./member/inventario.js";
 import { ShopRob, BuyRob } from "./member/tiendarob.js";
 import { Cheque } from "./member/cheque.js";
-export { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Ruleta, Slot, Wallet, MoneyTop, Casino, Daily, Points, Birthday, SopaDePata, Verify, Album, Bank, Deposit, Withdraw, Rob, Multas, Pay, Inventario, ShopRob, BuyRob, Cheque, };
+import { Parley } from "./games/parley.js";
+export { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Ruleta, Slot, Wallet, MoneyTop, Casino, Daily, Points, Birthday, SopaDePata, Verify, Album, Bank, Deposit, Withdraw, Rob, Multas, Pay, Inventario, ShopRob, BuyRob, Cheque, Parley, };

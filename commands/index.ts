@@ -26,6 +26,7 @@ import { Pay } from "./member/pay.js";
 import { Inventario } from "./member/inventario.js";
 import { ShopRob, BuyRob } from "./member/tiendarob.js";
 import { Cheque } from "./member/cheque.js";
+import { Parley } from "./games/parley.js";
 
 export {
     Profile,
@@ -59,4 +60,5 @@ export {
     ShopRob,
     BuyRob,
     Cheque,
+    Parley,
 }

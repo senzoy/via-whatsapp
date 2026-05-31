@@ -7,13 +7,15 @@ dotenv.config();
 mongoose.connect(process.env.DB || '');
 const { Schema } = mongoose;
 
+//bank transactions
 const transactionSchema = new Schema({
-  type: { type: String, enum: ['deposit', 'withdraw'], required: true },
+  type: { type: String, enum: ['deposit', 'withdraw', 'admin_add', 'admin_remove', 'transfer'], required: true },
   amount: { type: Number, required: true },
   date: { type: Date, default: Date.now },
   balanceAfter: { type: Number, required: true }
 });
 
+//bank account
 const bancoSchema = new Schema({
   userId: { type: String, required: true, unique: true },
   balance: { type: Number, default: 0 },

@@ -1,7 +1,7 @@
 import { Bot } from "./core/core.js";
 import dotenv from 'dotenv';
 dotenv.config();
-import { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Wallet, MoneyTop, Daily, Points, Verify, Album, Birthday, SopaDePata, Bank, Deposit, Withdraw, Rob, Multas, Pay, Slot, Ruleta, Inventario, ShopRob, BuyRob, Cheque, } from './commands/index.js';
+import { Profile, Lock, Unlock, Warn, Warnings, Top, Kick, Yappy, Work, Levels, Wallet, MoneyTop, Daily, Points, Verify, Album, Birthday, SopaDePata, Bank, Deposit, Withdraw, Rob, Multas, Pay, Slot, Ruleta, Inventario, ShopRob, BuyRob, Cheque, Parley, } from './commands/index.js';
 import cron from 'node-cron';
 import { getBirthdaysToday } from "./db/mongodb.js";
 import { resetAllDailyWithdraws, resetAllDailyYappy } from "./db/banco.js";
@@ -45,6 +45,7 @@ var Commands;
     Commands["COMPRAR"] = "comprar";
     Commands["CHEQUE"] = "cheque";
     Commands["PAGARNEYMAR"] = "pagarneymar";
+    Commands["PARLEY"] = "parley";
 })(Commands || (Commands = {}));
 await Bot.connect();
 Bot.command(Commands.PROFILE, (ctx) => {
@@ -76,13 +77,22 @@ Bot.command(Commands.KICK, (ctx) => {
         Kick(ctx);
 });
 Bot.command(Commands.VERIFY, Verify);
-Bot.command(Commands.YAPPY, Yappy);
-Bot.command(Commands.WORK, Work);
+Bot.command(Commands.YAPPY, (ctx) => {
+    if (ctx.admin)
+        Yappy(ctx);
+});
+Bot.command(Commands.WORK, (ctx) => {
+    if (ctx.admin)
+        Work(ctx);
+});
 Bot.command(Commands.ALBUM, (ctx) => {
     if (ctx.admin)
         Album(ctx);
 });
-Bot.command(Commands.WALLET, Wallet);
+Bot.command(Commands.WALLET, (ctx) => {
+    if (ctx.admin)
+        Wallet(ctx);
+});
 Bot.command(Commands.TOPPOINTS, (ctx) => {
     if (ctx.admin)
         Levels(ctx);
@@ -91,33 +101,58 @@ Bot.command(Commands.TOPMONEY, (ctx) => {
     if (ctx.admin)
         MoneyTop(ctx);
 });
-Bot.command(Commands.DAILY, Daily);
+Bot.command(Commands.DAILY, (ctx) => {
+    if (ctx.admin)
+        Daily(ctx);
+});
 Bot.command(Commands.POINTS, (ctx) => {
     if (ctx.admin)
         Points(ctx);
 });
 Bot.command(Commands.BIRTHDAY, Birthday);
 Bot.command('cumple', Birthday);
-Bot.command(Commands.CUMPLEAÑOS, (ctx) => {
+Bot.command(Commands.CUMPLEAÑOS, SopaDePata);
+Bot.command(Commands.SOPADEPATA, SopaDePata);
+Bot.command(Commands.BANK, (ctx) => {
     if (ctx.admin)
-        SopaDePata(ctx);
+        Bank(ctx);
 });
-Bot.command(Commands.SOPADEPATA, (ctx) => {
+Bot.command(Commands.DEPOSIT, (ctx) => {
     if (ctx.admin)
-        SopaDePata(ctx);
+        Deposit(ctx);
 });
-Bot.command(Commands.BANK, Bank);
-Bot.command(Commands.DEPOSIT, Deposit);
-Bot.command(Commands.WITHDRAW, Withdraw);
-Bot.command(Commands.ROB, Rob);
-Bot.command(Commands.SLOT, Slot);
-Bot.command(Commands.RULETTE, Ruleta);
-Bot.command(Commands.MULTAS, Multas);
-Bot.command(Commands.PAY, Pay);
+Bot.command(Commands.WITHDRAW, (ctx) => {
+    if (ctx.admin)
+        Withdraw(ctx);
+});
+Bot.command(Commands.ROB, (ctx) => {
+    if (ctx.admin)
+        Rob(ctx);
+});
+Bot.command(Commands.SLOT, (ctx) => {
+    if (ctx.admin)
+        Slot(ctx);
+});
+Bot.command(Commands.RULETTE, (ctx) => {
+    if (ctx.admin)
+        Ruleta(ctx);
+});
+Bot.command(Commands.MULTAS, (ctx) => {
+    if (ctx.admin)
+        Multas(ctx);
+});
+Bot.command(Commands.PAY, (ctx) => {
+    if (ctx.admin)
+        Pay(ctx);
+});
 // Bot.command(Commands.INVENTARIO, Inventario)
 // Bot.command(Commands.TIENDAROB, ShopRob)
 // Bot.command(Commands.COMPRAR, BuyRob)
-Bot.command(Commands.CHEQUE, Cheque);
+Bot.command(Commands.CHEQUE, (ctx) => {
+    if (ctx.admin)
+        Cheque(ctx);
+});
+Bot.command(Commands.PARLEY, Parley);
 // Reload pending cheques on restart
 import { getAllUnprocessedCheques, completeCheque } from "./db/cheque.js";
 import { AddBalance } from "./db/mongodb.js";

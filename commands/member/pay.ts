@@ -8,7 +8,7 @@ import {
   clearInteractionPenalty,
 } from "../../db/criminal.js";
 import { getPendingLoans, getLoansTotalDue, reduceLoanBalance, payLoan } from "../../db/loans.js";
-import { isFrozen } from "../../db/banco.js";
+import { isFrozen } from "../../db/bank.js";
 import { addToBankFund } from "../../db/configs.js";
 
 async function payLoans(ctx: CommandContext, userId: string, send: Function) {
@@ -47,7 +47,7 @@ async function payLoans(ctx: CommandContext, userId: string, send: Function) {
 
   const frozen = await isFrozen(userId);
   if (remaining > 0 && !frozen) {
-    const { BancoModel } = await import("../../db/banco.js");
+    const { BancoModel } = await import("../../db/bank.js");
     const bancoDoc = await BancoModel.findOne({ userId }).select('balance');
     const bankBalance = bancoDoc?.balance ?? 0;
     if (bankBalance > 0) {
