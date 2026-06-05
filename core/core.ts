@@ -108,8 +108,8 @@ class WABot {
       console.log(msg.key.remoteJid)
 
       if (!text.startsWith(this.prefix)) {
-        console.log(`📩 Nuevo mensaje (${type}) ${msg.key} - Request ID: ${requestId}, time: ${new Date(msg.messageTimestamp)}`)
-        PointSystem(messages)
+        console.log(`📩 Nuevo mensaje (${type}) ${msg.key} - Request ID: ${requestId}, time: ${new Date(Number(msg.messageTimestamp) * 1000)}`)
+        // PointSystem(messages)
         if (msg.key.participant) checkRobResponse(msg.key.participant, text)
 
       } else {

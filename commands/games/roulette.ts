@@ -356,17 +356,17 @@ const BET_HELP =
 
 export async function Ruleta(ctx: CommandContext) {
 
-    if (!isCasinoOpen()) {
+    // if (!isCasinoOpen()) {
 
-        return Bot.sendMessage({
-            msg: ctx.msg,
-            jid: ctx.jid,
-            content:
-                `🎰 Casino cerrado.\n` +
-                `Abre en: ${getNextOpenTime()}`,
-            reply: true
-        });
-    }
+    //     return Bot.sendMessage({
+    //         msg: ctx.msg,
+    //         jid: ctx.jid,
+    //         content:
+    //             `🎰 Casino cerrado.\n` +
+    //             `Abre en: ${getNextOpenTime()}`,
+    //         reply: true
+    //     });
+    // }
 
     const userId =
         ctx.msg.key.participant as string;

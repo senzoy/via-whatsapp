@@ -2,6 +2,37 @@ import { Bot } from "../../core/core.js";
 import { getMember, AddBalance } from "../../db/mongodb.js";
 import { findTicketByCode, linkTicketToUser } from "../../db/parley.js";
 import mongoose from "mongoose";
+function detectSport(conditions) {
+    if (!conditions?.length)
+        return { emoji: '🎫', label: 'Apuesta' };
+    const metrics = conditions.map(c => (c.metric || '').toLowerCase()).join(' ');
+    if (/goal|corner|card|foul|assist|shot|offside|penalty|save/.test(metrics)) {
+        return { emoji: '⚽', label: 'Fútbol' };
+    }
+    if (/kill|death|assist|damage|win|placement|elimination/.test(metrics)) {
+        return { emoji: '🎮', label: 'Warzone' };
+    }
+    return { emoji: '🎫', label: 'Apuesta' };
+}
+function formatCondIcon(targetType, metric) {
+    const m = (metric || '').toLowerCase();
+    const t = (targetType || '').toLowerCase();
+    if (/goal/.test(m))
+        return '⚽';
+    if (/kill|elimination/.test(m))
+        return '💀';
+    if (/assist/.test(m))
+        return '🎯';
+    if (/win/.test(m))
+        return '🏆';
+    if (/card/.test(m))
+        return '🟨';
+    if (/corner/.test(m))
+        return '🚩';
+    if (t === 'team')
+        return '🏟️';
+    return '👤';
+}
 export async function Parley(ctx) {
     const userId = ctx.msg.key.participant;
     const send = (content) => Bot.sendMessage({ msg: ctx.msg, jid: ctx.jid, content, reply: true, delay: 2000 });
@@ -69,8 +100,9 @@ export async function Parley(ctx) {
     const payoutStr = ticket.actualPayout
         ? `$${Number(ticket.actualPayout).toLocaleString('en-US')}`
         : 'Pendiente';
+    const sport = detectSport(ticket.conditions);
     const lines = [
-        `🎫 *PARLEY #${ticket.ticketCode}*`,
+        `${sport.emoji} *${sport.label.toUpperCase()} — #${ticket.ticketCode}*`,
         `─────────────────`,
         `📌 Título: ${ticket.title || 'Sin título'}`,
         `💰 Apuesta: $${wager.toLocaleString('en-US')}`,
@@ -89,7 +121,8 @@ export async function Parley(ctx) {
             const condOdds = c.odds ? ` @${c.odds}x` : '';
             const condStatus = c.status === 'won' ? '✅' : c.status === 'lost' ? '❌' : '⏳';
             const actualVal = c.actualValue != null ? ` (real: ${c.actualValue})` : '';
-            lines.push(`${i + 1}️⃣ ${c.targetName || '?'} — ${c.metric || '?'} ${op} ${val}${condOdds}`);
+            const icon = formatCondIcon(c.targetType, c.metric);
+            lines.push(`${i + 1}️⃣ ${icon} ${c.targetName || '?'} — ${c.metric || '?'} ${op} ${val}${condOdds}`);
             lines.push(`   Estado: ${condStatus}${actualVal}`);
         });
         lines.push(`─────────────────`);

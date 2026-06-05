@@ -18,7 +18,7 @@ import {
 const MIN_BET = 1_000;
 const MAX_BET = 20_000_000;
 
-const COOLDOWN_WIN = 15_000;
+const COOLDOWN_WIN = 120_000;
 const COOLDOWN_LOSE = 10_000;
 
 // RTP REAL DEL CASINO
@@ -232,16 +232,16 @@ function spinFull(amount: number): SpinResult {
 
 export async function Slot(ctx: CommandContext) {
 
-  if (!isCasinoOpen()) {
+  // if (!isCasinoOpen()) {
 
-    return Bot.sendMessage({
-      msg: ctx.msg,
-      jid: ctx.jid,
-      reply: true,
-      delay: 2000,
-      content: `🎰 El casino está cerrado. Vuelve a las ${getNextOpenTime()}`
-    });
-  }
+  //   return Bot.sendMessage({
+  //     msg: ctx.msg,
+  //     jid: ctx.jid,
+  //     reply: true,
+  //     delay: 2000,
+  //     content: `🎰 El casino está cerrado. Vuelve a las ${getNextOpenTime()}`
+  //   });
+  // }
 
   const userId = ctx.msg.key.participant as string;
 
