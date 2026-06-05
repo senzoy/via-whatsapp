@@ -15,7 +15,7 @@ import {
 // CONFIG
 // ─────────────────────────────────────────────────────────────
 
-const MIN_BET = 1_000;
+const MIN_BET = 1;
 const MAX_BET = 20_000_000;
 
 const COOLDOWN_WIN = 120_000;

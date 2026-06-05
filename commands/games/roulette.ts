@@ -14,10 +14,10 @@ import {
 // CONFIGURACIÓN
 // ─────────────────────────────────────────────────────────────
 
-const MIN_BET = 10_000;
+const MIN_BET = 1;
 const MAX_BET = 20_000_000;
 
-const COOLDOWN_WIN = 15_000;
+const COOLDOWN_WIN = 120_000;
 const COOLDOWN_LOSE = 8_000;
 
 const TARGET_RTP = 0.92;
