@@ -92,15 +92,14 @@ async function execute(profile: Profile) {
     if (user) {
       const birthday = await GetMemberBirthday(profile.jid)
       return `
-      *Perfil de Usuario*
-      👤 Nombre: ${user?.name}
-      🧢 Discord: ${user?.discordTag ? `✅ ${user.discordTag}` : '❌ No verificado'}
-      📅 Cumpleaños: ${birthday?.birthday == null ? `No registrado` : `${birthday.birthday.day}/${birthday.birthday.month}`}
-      ✉ Mensajes: ${user?.message.length}
-      👑 Puntos: ${user?.points?.toLocaleString('en-us')}
-      ⚠ Advertencias: ${user?.warnings.length}
-      📗 Nivel: ${getLevel(user.level || 0)}
-      ⚔️ Rango: ${getRank(user.level || 0)}
+      *👤 Perfil de Usuario*
+      📛 Nombre: ${user?.name}
+      📊 Estadísticas
+      📝 Parleys: 0
+      📈 Análisis: 0
+      ❓ Preguntas: 0
+      🎯 Picks: 0
+      ⚠️ Advertencias: ${user?.warnings.length}
       `
     } else {
       return 'No Hay Registro'
