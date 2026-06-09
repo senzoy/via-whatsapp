@@ -2,6 +2,7 @@
 import { Bot } from "../../core/core.js";
 import type { CommandContext } from "../../libs/types.js";
 import { GetMemberBirthday, getMember } from "../../db/mongodb.js";
+import { getTypedMessagesByLib } from "../../db/typedMessages.js";
 
 export function getRank(points: number) {
   if (points >= 25000) return '👑 Admin'
@@ -91,14 +92,20 @@ async function execute(profile: Profile) {
     const user = await getMember(profile.jid)
     if (user) {
       const birthday = await GetMemberBirthday(profile.jid)
+      const typedMessages = await getTypedMessagesByLib(profile.jid)
+
+      const analysisCount = typedMessages.filter(m => m.type === 'Análisis').length;
+      const preguntaCount = typedMessages.filter(m => m.type === 'Pregunta').length;
+      const pickCount = typedMessages.filter(m => m.type === 'Pick').length;
+
       return `
       *👤 Perfil de Usuario*
       📛 Nombre: ${user?.name}
       📊 Estadísticas
       📝 Parleys: 0
-      📈 Análisis: 0
-      ❓ Preguntas: 0
-      🎯 Picks: 0
+      📈 Análisis: ${analysisCount}
+      ❓ Preguntas: ${preguntaCount}
+      🎯 Picks: ${pickCount}
       ⚠️ Advertencias: ${user?.warnings.length}
       `
     } else {
