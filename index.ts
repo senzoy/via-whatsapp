@@ -109,24 +109,24 @@ Bot.command(Commands.VERIFY, Verify)
 // Bot.command(Commands.YAPPY, (ctx) => {
 //   if (ctx.admin) Yappy(ctx)
 // })
-Bot.command(Commands.WORK, (ctx) => {
-  if (ctx.admin) Work(ctx)
-})
+// Bot.command(Commands.WORK, (ctx) => {
+//   if (ctx.admin) Work(ctx)
+// })
 // Bot.command(Commands.ALBUM, (ctx) => {
 //   if (ctx.admin) Album(ctx)
 // })
-Bot.command(Commands.WALLET, (ctx) => {
-  if (ctx.admin) Wallet(ctx)
-})
+// Bot.command(Commands.WALLET, (ctx) => {
+//   if (ctx.admin) Wallet(ctx)
+// })
 Bot.command(Commands.TOPPOINTS, (ctx) => {
   if (ctx.admin) Levels(ctx)
 })
 Bot.command(Commands.TOPMONEY, (ctx) => {
   if (ctx.admin) MoneyTop(ctx)
 })
-Bot.command(Commands.DAILY, (ctx) => {
-  if (ctx.admin) Daily(ctx)
-})
+// Bot.command(Commands.DAILY, (ctx) => {
+//   if (ctx.admin) Daily(ctx)
+// })
 Bot.command(Commands.POINTS, (ctx) => {
   if (ctx.admin) Points(ctx)
 })
@@ -146,12 +146,12 @@ Bot.command(Commands.SOPADEPATA, SopaDePata)
 // Bot.command(Commands.ROB, (ctx) => {
 //   if (ctx.admin) Rob(ctx)
 // })
-Bot.command(Commands.SLOT, (ctx) => {
-  if (ctx.admin) Slot(ctx)
-})
-Bot.command(Commands.RULETTE, (ctx) => {
-  if (ctx.admin) Ruleta(ctx)
-})
+// Bot.command(Commands.SLOT, (ctx) => {
+//   if (ctx.admin) Slot(ctx)
+// })
+// Bot.command(Commands.RULETTE, (ctx) => {
+//   if (ctx.admin) Ruleta(ctx)
+// })
 // Bot.command(Commands.MULTAS, (ctx) => {
 //   if (ctx.admin) Multas(ctx)
 // })
