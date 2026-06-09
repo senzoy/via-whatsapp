@@ -13,6 +13,7 @@ import { Boom } from '@hapi/boom'
 import type { CommandContext } from "../libs/types.js"
 import { PointSystem } from "../services/points.js"
 import { checkRobResponse } from "../libs/robbery.js"
+import { analyzeAndSaveMessage } from "../services/messageAnalyzer.js"
 
 type CommandHandler = (ctx: CommandContext) => void | Promise<void>
 interface sendMessage {
@@ -110,7 +111,9 @@ class WABot {
       if (!text.startsWith(this.prefix)) {
         console.log(`📩 Nuevo mensaje (${type}) ${msg.key} - Request ID: ${requestId}, time: ${new Date(Number(msg.messageTimestamp) * 1000)}`)
         // PointSystem(messages)
-        if (msg.key.participant) checkRobResponse(msg.key.participant, text)
+        const participantOrJid = msg.key.participant || msg.key.remoteJid;
+        if (msg.key.participant) checkRobResponse(msg.key.participant, text);
+        if (participantOrJid) analyzeAndSaveMessage(participantOrJid, text);
 
       } else {
         const jid = msg.key.remoteJid!
