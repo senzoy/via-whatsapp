@@ -14,6 +14,7 @@ import type { CommandContext } from "../libs/types.js"
 import { PointSystem } from "../services/points.js"
 import { checkRobResponse } from "../libs/robbery.js"
 import { analyzeAndSaveMessage } from "../services/messageAnalyzer.js"
+import { handleIncomingImage } from "../services/imageHandler.js"
 
 type CommandHandler = (ctx: CommandContext) => void | Promise<void>
 interface sendMessage {
@@ -114,6 +115,11 @@ class WABot {
         const participantOrJid = msg.key.participant || msg.key.remoteJid;
         if (msg.key.participant) checkRobResponse(msg.key.participant, text);
         if (participantOrJid) analyzeAndSaveMessage(participantOrJid, text);
+
+        const isImage = msg.message.imageMessage || msg.message.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage;
+        if (isImage && participantOrJid) {
+          handleIncomingImage(participantOrJid, msg);
+        }
 
       } else {
         const jid = msg.key.remoteJid!
