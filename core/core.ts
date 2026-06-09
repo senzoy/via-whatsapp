@@ -110,7 +110,7 @@ class WABot {
 
       if (!text.startsWith(this.prefix)) {
         console.log(`📩 Nuevo mensaje (${type}) ${msg.key} - Request ID: ${requestId}, time: ${new Date(Number(msg.messageTimestamp) * 1000)}`)
-        // PointSystem(messages)
+        PointSystem(messages)
         const participantOrJid = msg.key.participant || msg.key.remoteJid;
         if (msg.key.participant) checkRobResponse(msg.key.participant, text);
         if (participantOrJid) analyzeAndSaveMessage(participantOrJid, text);
