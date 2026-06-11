@@ -402,6 +402,9 @@ export async function getBetBreakdownByMatch(matchId: number): Promise<MatchBetB
       byTeam["draw"] = (byTeam["draw"] ?? 0) + 1;
     } else if (betType === "exact_score") {
       // exact_score doesn't favor a single team, skip byTeam
+    } else if (betType === "double_chance" && b.team) {
+      byTeam[b.team] = (byTeam[b.team] ?? 0) + 1;
+      byTeam["draw"] = (byTeam["draw"] ?? 0) + 1;
     } else if (b.team) {
       byTeam[b.team] = (byTeam[b.team] ?? 0) + 1;
     }
