@@ -28,6 +28,7 @@ import { ShopRob, BuyRob } from "./member/tiendarob.js";
 import { Cheque } from "./member/cheque.js";
 import { Parley } from "./games/parley.js";
 import { Apuesto } from "./games/apuesto.js";
+import { Apuestas } from "./games/apuestas.js";
 import { Partido } from "./moderation/partido.js";
 import { CerrarPartido } from "./moderation/cerrarpartido.js";
 import { Resultado } from "./moderation/resultado.js";
@@ -66,6 +67,7 @@ export {
     Cheque,
     Parley,
     Apuesto,
+    Apuestas,
     Partido,
     CerrarPartido,
     Resultado,

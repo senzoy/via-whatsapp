@@ -35,6 +35,7 @@ import {
   Cheque,
   Parley,
   Apuesto,
+  Apuestas,
   Partido,
   CerrarPartido,
   Resultado,
@@ -85,6 +86,7 @@ enum Commands {
   PAGARNEYMAR = 'pagarneymar',
   PARLEY = 'parley',
   APUESTO = 'apuesto',
+  APUESTAS = 'apuestas',
   PARTIDO = 'partido',
   CERRARPARTIDO = 'cerrarpartido',
   RESULTADO = 'resultado',
@@ -175,6 +177,9 @@ Bot.command(Commands.SOPADEPATA, SopaDePata)
 // Bot.command(Commands.PARLEY, Parley)
 
 Bot.command(Commands.APUESTO, Apuesto)
+Bot.command(Commands.APUESTAS, (ctx) => {
+  if (ctx.admin) Apuestas(ctx)
+})
 Bot.command(Commands.PARTIDO, (ctx) => {
   if (ctx.admin) Partido(ctx)
 })

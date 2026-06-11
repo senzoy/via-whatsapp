@@ -368,3 +368,73 @@ export async function evaluateBets(matchId: number, scoreA: number, scoreB: numb
 
   return { winners, losers, match: match.toObject() };
 }
+
+// ─── Bet Stats ─────────────────────────────────────────────────────────────
+
+export interface MatchBetBreakdown {
+  match: IMatch;
+  total: number;
+  byTeam: Record<string, number>;
+  byType: Record<string, number>;
+}
+
+export interface GroupBetSummary {
+  matchId: number;
+  teamA: string;
+  teamB: string;
+  status: string;
+  count: number;
+}
+
+export async function getBetBreakdownByMatch(matchId: number): Promise<MatchBetBreakdown | null> {
+  const match = await MatchModel.findOne({ matchId });
+  if (!match) return null;
+
+  const bets = await BetModel.find({ matchId });
+  const byTeam: Record<string, number> = {};
+  const byType: Record<string, number> = {};
+
+  for (const b of bets) {
+    const betType = b.betType;
+    byType[betType] = (byType[betType] ?? 0) + 1;
+
+    if (betType === "draw") {
+      byTeam["draw"] = (byTeam["draw"] ?? 0) + 1;
+    } else if (betType === "exact_score") {
+      continue;
+    } else if (b.team) {
+      byTeam[b.team] = (byTeam[b.team] ?? 0) + 1;
+    }
+  }
+
+  // Count exact_score bets per team via the match stored team
+  for (const b of bets) {
+    if (b.betType === "exact_score") {
+      if (b.scoreA != null && b.scoreB != null) {
+        byTeam[match.teamA] = (byTeam[match.teamA] ?? 0) + 1;
+        byTeam[match.teamB] = (byTeam[match.teamB] ?? 0) + 1;
+      }
+    }
+  }
+
+  return { match: match.toObject(), total: bets.length, byTeam, byType };
+}
+
+export async function getBetCountsByGroup(group: string): Promise<GroupBetSummary[]> {
+  const matches = await MatchModel.find({ group, status: { $in: ["open", "closed"] } }).sort({ createdAt: -1 });
+
+  const summaries: GroupBetSummary[] = [];
+
+  for (const m of matches) {
+    const count = await BetModel.countDocuments({ matchId: m.matchId });
+    summaries.push({
+      matchId: m.matchId,
+      teamA: m.teamA,
+      teamB: m.teamB,
+      status: m.status,
+      count,
+    });
+  }
+
+  return summaries;
+}
