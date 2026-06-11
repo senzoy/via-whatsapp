@@ -34,6 +34,10 @@ import {
   BuyRob,
   Cheque,
   Parley,
+  Apuesto,
+  Partido,
+  CerrarPartido,
+  Resultado,
 } from './commands/index.js'
 import cron from 'node-cron'
 import { getBirthdaysToday } from "./db/mongodb.js";
@@ -79,7 +83,11 @@ enum Commands {
   COMPRAR = 'comprar',
   CHEQUE = 'cheque',
   PAGARNEYMAR = 'pagarneymar',
-  PARLEY = 'parley'
+  PARLEY = 'parley',
+  APUESTO = 'apuesto',
+  PARTIDO = 'partido',
+  CERRARPARTIDO = 'cerrarpartido',
+  RESULTADO = 'resultado',
 }
 
 await Bot.connect()
@@ -165,6 +173,17 @@ Bot.command(Commands.SOPADEPATA, SopaDePata)
 //   if (ctx.admin) Cheque(ctx)
 // })
 // Bot.command(Commands.PARLEY, Parley)
+
+Bot.command(Commands.APUESTO, Apuesto)
+Bot.command(Commands.PARTIDO, (ctx) => {
+  if (ctx.admin) Partido(ctx)
+})
+Bot.command(Commands.CERRARPARTIDO, (ctx) => {
+  if (ctx.admin) CerrarPartido(ctx)
+})
+Bot.command(Commands.RESULTADO, (ctx) => {
+  if (ctx.admin) Resultado(ctx)
+})
 
 // Reload pending cheques on restart
 // import { getAllUnprocessedCheques, completeCheque } from "./db/cheque.js";
