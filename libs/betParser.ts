@@ -11,7 +11,7 @@
 //   6. <team> o empate            → double_chance
 
 export type ParsedBet =
-  | { type: "draw" }
+  | { type: "draw"; matchId?: number }
   | { type: "exact_score"; teamA: string; scoreA: number; teamB: string; scoreB: number }
   | { type: "over"; team: string; threshold: number }
   | { type: "under"; team: string; threshold: number }
@@ -42,6 +42,12 @@ export function parseBet(args: string[]): ParsedBet | null {
   // ── 1. Empate ──────────────────────────────────────────────────────────────
   if (lower.length === 1 && lower[0] === "empate") {
     return { type: "draw" };
+  }
+  if (lower.length === 2 && lower[0] === "empate") {
+    const matchId = Number(args[1]);
+    if (!isNaN(matchId) && Number.isInteger(matchId) && matchId > 0) {
+      return { type: "draw", matchId };
+    }
   }
 
   // ── 2. Marcador exacto: <team> <num> <team> <num> ─────────────────────────

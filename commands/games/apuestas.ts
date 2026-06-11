@@ -45,12 +45,15 @@ export async function Apuestas(ctx: CommandContext) {
       const bCount = byTeam[match.teamB] ?? 0;
       const drawCount = byTeam["draw"] ?? 0;
 
-      for (const [label, count] of [[teamALabel, aCount], ["⚖️ Empate", drawCount], [teamBLabel, bCount]] as const) {
+      for (const [label, count] of [[teamALabel, aCount], [teamBLabel, bCount]] as const) {
         if (count > 0) {
           const pct = ((count / total) * 100).toFixed(0);
           lines.push(`  ${label}: ${count} (${pct}%)`);
         }
       }
+
+      const drawPct = total > 0 ? ((drawCount / total) * 100).toFixed(0) : "0";
+      lines.push(`  ⚖️ Empate: ${drawCount} (${drawPct}%)`);
 
       lines.push("", "*Por tipo:*");
       for (const [type, count] of Object.entries(byType).sort((a, b) => b[1] - a[1])) {

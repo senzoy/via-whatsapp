@@ -3,6 +3,7 @@ import { Bot } from "../../core/core.js";
 import { parseBet, formatBet, getTeamsFromBet } from "../../libs/betParser.js";
 import {
   findMatchByTeam,
+  getMatchById,
   getOpenMatches,
   resolveTeamInMatch,
   getUserBetForMatch,
@@ -63,17 +64,24 @@ export async function Apuesto(ctx: CommandContext) {
       match = found.match;
     }
   } else {
-    // For "empate" with no team — pick the only open match if there's exactly one
-    const openMatches = await getOpenMatches(group);
-    if (openMatches.length === 1) {
-      match = openMatches[0]!.toObject();
-    } else if (openMatches.length > 1) {
-      const matchList = openMatches
-        .map((m) => `  #${m.matchId}: ${m.teamA} vs ${m.teamB}`)
-        .join("\n");
-      return send(
-        `⚠️ Hay ${openMatches.length} partidos abiertos. Especifica un equipo:\n\n${matchList}\n\nEjemplo: \`!apuesto mex o empate\``
-      );
+    // For "empate" — use matchId if provided, otherwise find single open match
+    if (parsed.type === "draw" && parsed.matchId) {
+      const found = await getMatchById(parsed.matchId);
+      if (found && found.group === group && found.status === "open") {
+        match = found.toObject();
+      }
+    } else {
+      const openMatches = await getOpenMatches(group);
+      if (openMatches.length === 1) {
+        match = openMatches[0]!.toObject();
+      } else if (openMatches.length > 1) {
+        const matchList = openMatches
+          .map((m) => `  #${m.matchId}: ${m.teamA} vs ${m.teamB}`)
+          .join("\n");
+        return send(
+          `⚠️ Hay ${openMatches.length} partidos abiertos.\n\n${matchList}\n\nUsa \`!apuesto empate <id>\` para elegir un partido.\nEjemplo: \`!apuesto empate ${openMatches[0]!.matchId}\``
+        );
+      }
     }
   }
 
