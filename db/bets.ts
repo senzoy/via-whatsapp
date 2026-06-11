@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { findCountry, getCountryAliases } from "../assets/countries.js";
 
 const { Schema } = mongoose;
 
@@ -128,8 +129,13 @@ export function generateAliases(name: string): string[] {
     aliases.add(norm.slice(0, 3));
   }
 
-  // Add the original with accents too
-  aliases.add(name.toLowerCase());
+  // Add country-specific aliases if the name matches a known country
+  const country = findCountry(name);
+  if (country) {
+    for (const alias of getCountryAliases(country)) {
+      aliases.add(alias);
+    }
+  }
 
   return [...aliases];
 }

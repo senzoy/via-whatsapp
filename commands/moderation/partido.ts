@@ -1,6 +1,9 @@
 import type { CommandContext } from "../../libs/types.js";
 import { Bot } from "../../core/core.js";
 import { createMatch, getOpenMatches } from "../../db/bets.js";
+import { findCountry, COUNTRIES } from "../../assets/countries.js";
+
+const COUNTRY_LIST = COUNTRIES.map((c) => `  • \`${c.code}\` — ${c.spanish} (${c.english})`).join("\n");
 
 export async function Partido(ctx: CommandContext) {
   const send = (content: string) =>
@@ -12,7 +15,8 @@ export async function Partido(ctx: CommandContext) {
   if (args.length < 3) {
     return send(
       "❌ *Uso:* `!partido <equipo1> vs <equipo2>`\n\n" +
-      "Ejemplo: `!partido mex vs sud`"
+      "Ejemplo: `!partido mex vs arg`\n\n" +
+      "Países disponibles:\n" + COUNTRY_LIST
     );
   }
 
@@ -24,20 +28,45 @@ export async function Partido(ctx: CommandContext) {
   if (vsIndex === -1 || vsIndex === 0 || vsIndex === args.length - 1) {
     return send(
       "❌ *Formato incorrecto.* Usa:\n`!partido <equipo1> vs <equipo2>`\n\n" +
-      "Ejemplo: `!partido mexico vs sudafrica`"
+      "Ejemplo: `!partido mexico vs argentina`"
     );
   }
 
-  const teamA = args.slice(0, vsIndex).join(" ");
-  const teamB = args.slice(vsIndex + 1).join(" ");
+  const rawA = args.slice(0, vsIndex).join(" ");
+  const rawB = args.slice(vsIndex + 1).join(" ");
 
-  if (!teamA || !teamB) {
+  if (!rawA || !rawB) {
     return send("❌ Debes especificar dos equipos.");
   }
 
-  if (teamA.toLowerCase() === teamB.toLowerCase()) {
-    return send("❌ Los equipos no pueden ser iguales.");
+  // ── Resolve teams to country codes ───────────────────────────────────────
+  const countryA = findCountry(rawA);
+  const countryB = findCountry(rawB);
+
+  if (!countryA) {
+    return send(
+      `❌ *"${rawA}"* no corresponde a ningún país conocido.\n\n` +
+      "Usa el código, el nombre en inglés o en español.\n" +
+      "Ejemplo: \`!partido mexico vs argentina\`\n\n" +
+      "Países disponibles:\n" + COUNTRY_LIST
+    );
   }
+
+  if (!countryB) {
+    return send(
+      `❌ *"${rawB}"* no corresponde a ningún país conocido.\n\n` +
+      "Usa el código, el nombre en inglés o en español.\n" +
+      "Ejemplo: \`!partido mexico vs argentina\`\n\n" +
+      "Países disponibles:\n" + COUNTRY_LIST
+    );
+  }
+
+  if (countryA.code === countryB.code) {
+    return send("❌ Los equipos no pueden ser el mismo país.");
+  }
+
+  const teamA = countryA.code.toUpperCase();
+  const teamB = countryB.code.toUpperCase();
 
   // ── Check for existing open matches with same teams ──────────────────────
   const openMatches = await getOpenMatches(ctx.jid);
@@ -63,7 +92,7 @@ export async function Partido(ctx: CommandContext) {
     `⚽ *PARTIDO CREADO*`,
     `─────────────────`,
     `🆔 Partido #${match.matchId}`,
-    `🏟️ *${match.teamA}* vs *${match.teamB}*`,
+    `🏟️ *${match.teamA.toUpperCase()}* vs *${match.teamB.toUpperCase()}*`,
     `📋 Estado: 🟢 Abierto`,
     `─────────────────`,
     ``,
