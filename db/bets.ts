@@ -401,19 +401,9 @@ export async function getBetBreakdownByMatch(matchId: number): Promise<MatchBetB
     if (betType === "draw") {
       byTeam["draw"] = (byTeam["draw"] ?? 0) + 1;
     } else if (betType === "exact_score") {
-      continue;
+      // exact_score doesn't favor a single team, skip byTeam
     } else if (b.team) {
       byTeam[b.team] = (byTeam[b.team] ?? 0) + 1;
-    }
-  }
-
-  // Count exact_score bets per team via the match stored team
-  for (const b of bets) {
-    if (b.betType === "exact_score") {
-      if (b.scoreA != null && b.scoreB != null) {
-        byTeam[match.teamA] = (byTeam[match.teamA] ?? 0) + 1;
-        byTeam[match.teamB] = (byTeam[match.teamB] ?? 0) + 1;
-      }
     }
   }
 
