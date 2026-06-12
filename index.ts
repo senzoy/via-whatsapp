@@ -86,6 +86,7 @@ enum Commands {
   PAGARNEYMAR = 'pagarneymar',
   PARLEY = 'parley',
   APUESTO = 'apuesto',
+  APUESTA = 'apuesta',
   APUESTAS = 'apuestas',
   PARTIDO = 'partido',
   CERRARPARTIDO = 'cerrarpartido',
@@ -177,6 +178,7 @@ Bot.command(Commands.SOPADEPATA, SopaDePata)
 // Bot.command(Commands.PARLEY, Parley)
 
 Bot.command(Commands.APUESTO, Apuesto)
+Bot.command('apuesta', Apuesto)
 Bot.command(Commands.APUESTAS, (ctx) => {
   if (ctx.admin) Apuestas(ctx)
 })
