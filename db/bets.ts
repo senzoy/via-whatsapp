@@ -431,3 +431,49 @@ export async function getBetCountsByGroup(group: string): Promise<GroupBetSummar
 
   return summaries;
 }
+
+// ─── Maxbet Ranking ─────────────────────────────────────────────────────────
+
+const BET_POINTS: Record<string, number> = {
+  exact_score: 3,
+  winner: 2,
+  draw: 1,
+  double_chance: 1,
+  over: 1,
+  under: 1,
+  loser: 0,
+};
+
+export interface MaxbetEntry {
+  lib: string;
+  name: string;
+  points: number;
+}
+
+export async function getMaxbetRanking(group: string): Promise<MaxbetEntry[]> {
+  const finishedMatches = await MatchModel.find({ group, status: "finished" });
+  const matchIds = finishedMatches.map((m) => m.matchId);
+  if (matchIds.length === 0) return [];
+
+  const wonBets = await BetModel.find({ matchId: { $in: matchIds }, result: "won" });
+
+  const pointsByLib: Record<string, number> = {};
+  for (const b of wonBets) {
+    pointsByLib[b.userLib] = (pointsByLib[b.userLib] ?? 0) + (BET_POINTS[b.betType] ?? 0);
+  }
+
+  const { getMember } = await import("../db/mongodb.js");
+  const entries: MaxbetEntry[] = [];
+
+  for (const [lib, points] of Object.entries(pointsByLib)) {
+    const member = await getMember(lib);
+    entries.push({
+      lib,
+      name: member?.name ?? lib.split("@")[0] ?? "Unknown",
+      points,
+    });
+  }
+
+  entries.sort((a, b) => b.points - a.points);
+  return entries;
+}

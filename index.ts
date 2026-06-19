@@ -36,6 +36,7 @@ import {
   Parley,
   Apuesto,
   Apuestas,
+  Maxbet,
   Partido,
   CerrarPartido,
   Resultado,
@@ -88,6 +89,7 @@ enum Commands {
   APUESTO = 'apuesto',
   APUESTA = 'apuesta',
   APUESTAS = 'apuestas',
+  MAXBET = 'maxbet',
   PARTIDO = 'partido',
   CERRARPARTIDO = 'cerrarpartido',
   RESULTADO = 'resultado',
@@ -181,6 +183,9 @@ Bot.command(Commands.APUESTO, Apuesto)
 Bot.command('apuesta', Apuesto)
 Bot.command(Commands.APUESTAS, (ctx) => {
   if (ctx.admin) Apuestas(ctx)
+})
+Bot.command(Commands.MAXBET, (ctx) => {
+  if (ctx.admin) Maxbet(ctx)
 })
 Bot.command(Commands.PARTIDO, (ctx) => {
   if (ctx.admin) Partido(ctx)
