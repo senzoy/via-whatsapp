@@ -7,6 +7,7 @@ import {
   getOpenMatches,
   resolveTeamInMatch,
   getUserBetForMatch,
+  getUserChangedBetForMatch,
   placeBet,
   type IMatch,
 } from "../../db/bets.js";
@@ -133,9 +134,15 @@ export async function Apuesto(ctx: CommandContext) {
   // ── Check if user already bet on this match ──────────────────────────────
   const existingBet = await getUserBetForMatch(match.matchId, userId);
   if (existingBet) {
+    if (existingBet.changed) {
+      return send(
+        `⚠️ Ya usaste tu único cambio en el partido #${match.matchId} (*${match.teamA}* vs *${match.teamB}*).\n\n` +
+        `No puedes volver a cambiar tu apuesta.`
+      );
+    }
     return send(
-      `⚠️ Ya tienes una apuesta registrada en el partido #${match.matchId} (*${match.teamA}* vs *${match.teamB}*).\n\n` +
-      `No puedes apostar dos veces en el mismo partido.`
+      `⚠️ Ya tienes una apuesta activa en el partido #${match.matchId} (*${match.teamA}* vs *${match.teamB}*).\n\n` +
+      `Usa \`!cambiarapuesta\` para cancelarla y apostar de nuevo.`
     );
   }
 

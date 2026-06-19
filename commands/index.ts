@@ -29,6 +29,7 @@ import { Cheque } from "./member/cheque.js";
 import { Parley } from "./games/parley.js";
 import { Apuesto } from "./games/apuesto.js";
 import { Apuestas } from "./games/apuestas.js";
+import { CambiarApuesta } from "./games/cambiarapuesta.js";
 import { Maxbet } from "./games/maxbet.js";
 import { MisApuestas } from "./games/misapuestas.js";
 import { Partido } from "./moderation/partido.js";
@@ -70,6 +71,7 @@ export {
     Parley,
     Apuesto,
     Apuestas,
+    CambiarApuesta,
     Maxbet,
     MisApuestas,
     Partido,

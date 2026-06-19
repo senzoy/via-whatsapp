@@ -84,6 +84,7 @@ export interface IBet {
   scoreB: number | null;
   threshold: number | null;
   result: BetResult;
+  changed: boolean;
   createdAt: Date;
 }
 
@@ -100,6 +101,7 @@ const betSchema = new Schema<IBet>({
   scoreB: { type: Number, default: null },
   threshold: { type: Number, default: null },
   result: { type: String, enum: ["pending", "won", "lost"], default: "pending" },
+  changed: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });
 
@@ -272,6 +274,10 @@ export async function getUserBetForMatch(matchId: number, userLib: string) {
 
 export async function getBetsByMatch(matchId: number) {
   return BetModel.find({ matchId });
+}
+
+export async function getUserChangedBetForMatch(matchId: number, userLib: string) {
+  return BetModel.findOne({ matchId, userLib, changed: true });
 }
 
 export async function getBetsByUser(userLib: string) {
@@ -447,8 +453,8 @@ const BET_POINTS: Record<string, number> = {
   winner: 2,
   draw: 1,
   double_chance: 1,
-  over: 1,
-  under: 1,
+  over: 1.5,
+  under: 1.5,
   loser: 0,
 };
 
