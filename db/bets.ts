@@ -274,6 +274,14 @@ export async function getBetsByMatch(matchId: number) {
   return BetModel.find({ matchId });
 }
 
+export async function getBetsByUser(userLib: string) {
+  return BetModel.find({ userLib }).sort({ createdAt: -1 });
+}
+
+export async function getMatchesByIds(matchIds: number[]) {
+  return MatchModel.find({ matchId: { $in: matchIds } });
+}
+
 // ─── Bet Evaluation ──────────────────────────────────────────────────────────
 
 /**

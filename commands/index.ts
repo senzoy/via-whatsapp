@@ -30,6 +30,7 @@ import { Parley } from "./games/parley.js";
 import { Apuesto } from "./games/apuesto.js";
 import { Apuestas } from "./games/apuestas.js";
 import { Maxbet } from "./games/maxbet.js";
+import { MisApuestas } from "./games/misapuestas.js";
 import { Partido } from "./moderation/partido.js";
 import { CerrarPartido } from "./moderation/cerrarpartido.js";
 import { Resultado } from "./moderation/resultado.js";
@@ -70,6 +71,7 @@ export {
     Apuesto,
     Apuestas,
     Maxbet,
+    MisApuestas,
     Partido,
     CerrarPartido,
     Resultado,
