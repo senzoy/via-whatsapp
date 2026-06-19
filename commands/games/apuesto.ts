@@ -7,7 +7,6 @@ import {
   getOpenMatches,
   resolveTeamInMatch,
   getUserBetForMatch,
-  getUserChangedBetForMatch,
   placeBet,
   type IMatch,
 } from "../../db/bets.js";
